@@ -12,7 +12,9 @@ function Main() {
         <button
           className="custom-button"
           onClick={() => navigate("/Username")}>새로시작</button>
-        <button className="custom-button">이어하기</button>
+        <button 
+          className="custom-button"
+          onClick={() => navigate("/continue")}>이어하기</button>
       </div>
     </div>
   );

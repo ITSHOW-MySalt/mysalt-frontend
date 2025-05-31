@@ -1,0 +1,98 @@
+body {
+    margin: 0;
+    background: white; /* 배경색 */
+    height: 100vh;
+    overflow: hidden; /* 스크롤 방지 */
+    /* display: flex; */
+    /* justify-content: center; */
+    /* align-items: center; */
+}
+
+/* 배경 이미지, 메시지, 버튼을 담는 전체 컨테이너 */
+.continue-start-container {
+    position: relative;
+    height: 100vh;
+    background-color: #f5f5f5;
+    /* background-image: url('/img/background_gray.png'); */
+    /* background-size: cover; */
+    /* background-position: center center; */
+    /* background-repeat: no-repeat; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #333;
+    width: 33.33vw;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.continue-start-container img.bg {
+    height: 100%; 
+    width: auto;
+    object-fit: cover; 
+    display: block;
+    position: absolute; 
+    top: 0;
+    left: 0;
+    z-index: -1; 
+    /* transform: scale(1.2); // 필요하면 확대 */
+}
+
+.back-button {
+    position: absolute; 
+    top: 20px; 
+    left: 20px; 
+    width: 40px; 
+    height: auto; 
+    display: block; 
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    z-index: 10; 
+}
+.back-button img { 
+    width: 100%; 
+    height: auto;
+    display: block; 
+}
+
+.welcome-message { 
+    position: absolute; 
+    top: 45%; 
+    left: 50%;
+    transform: translate(-50%, -50%); 
+    text-align: center; 
+    font-size: 24px; 
+    color: #333; 
+    white-space: nowrap;
+}
+
+.start-game-btn { 
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.start-game-btn button { 
+    width: 310px;
+    padding: 15px 0; 
+    background-color: white; 
+    color: black; 
+    font-size: 24px;
+    font-weight: 500; 
+    border: none;
+    border-radius: 12px; 
+    box-shadow: 0px 4px 0px 0px rgba(0, 0, 0, 0.8); /* 그림자 */
+    cursor: pointer; /* 마우스 커서 변경 */
+    transition: transform 0.2s ease;
+    text-align: center; 
+    outline: none;
+}
+
+.start-game-btn button:hover { 
+    transform: scale(0.95);
+}
