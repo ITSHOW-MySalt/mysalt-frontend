@@ -1,0 +1,14 @@
+.main-overlay {
+  position: absolute;
+  top: 52.5vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  z-index: 2;
+}
+
+
+
