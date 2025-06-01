@@ -1,0 +1,16 @@
+.username-overlay {
+  position: absolute;
+  top: 50vh;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.username-hint{
+  margin-top: 0px;
+  margin-bottom: 2vh;
+}
+
+.username-question{
+   margin-bottom: 3vh;
+}

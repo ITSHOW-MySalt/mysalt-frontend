@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Welcome.css';
+import '../styles/Welcome.css';
 
 // Welcome 컴포넌트 (props로 username을 받을 거라고 가정)
 function Welcome({ username }) { 

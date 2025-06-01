@@ -1,0 +1,18 @@
+.gender-overlay {
+  position: absolute;
+   top: 50vh;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   z-index: 2;
+}
+
+.gender-hint{
+  margin-bottom: 8vh;
+}
+
+.gender-button{
+  display: flex;
+  flex-direction: ;
+  flex-direction: column;
+  gap: 3vh;
+}
