@@ -34,7 +34,7 @@ function Gender() {
       console.log("서버 응답:", response.data);
 
       // 다음 페이지로 이동
-      navigate("/welcome");
+      navigate("/welcome", { state: { username } });
     } catch (error) {
       console.error("서버 전송 실패:", error);
       alert("서버 전송에 실패했습니다.");
