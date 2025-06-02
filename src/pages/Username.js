@@ -27,7 +27,7 @@ function Username() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8089/api/check",
+        "/api/check",
         { username },
         {
           headers: {
