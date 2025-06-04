@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Base.css";
 import "../styles/Username.css";
-import "../components/Button.css";
-import "../components/Form.css";
+import "../styles/Button.css";
+import "../styles/Form.css";
 import FontStyles from "../components/FontStyles";
+import BackButton from '../components/BackButton';
 import axios from "axios";
 
 function Username() {
@@ -57,13 +58,7 @@ function Username() {
           alt="배경"
         />
 
-        <button className="back-button" onClick={() => navigate(-1)}>
-          <img
-            className="back-button-img"
-            src={process.env.PUBLIC_URL + "/img/back_arrow.png"}
-            alt="뒤로가기"
-          />
-        </button>
+        <BackButton />
 
         <div className="username-overlay">
           <form onSubmit={handleSubmit} className="name-box">

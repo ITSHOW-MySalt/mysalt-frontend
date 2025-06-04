@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import '../styles/Base.css';
 import '../styles/Main.css';
-import '../components/Button.css';
+import '../styles/Button.css';
 import FontStyles from '../components/FontStyles';
 
 export default function MainPage() {

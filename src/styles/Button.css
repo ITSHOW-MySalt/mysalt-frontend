@@ -1,31 +1,3 @@
-.back-button {
-  width: 5vh;
-  height: auto;
-  border: none;
-  background: none;
-  cursor: pointer;
-  z-index: 11;
-}
-
-.back-button-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.back-button-container {
-  position: absolute;
-  top: 2vh;
-  left: 2vh;
-  width: 5vh;
-  height: auto;
-  z-index: 10;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: red;
-}
-
 .next-button {
   width: 15vh;
   height: 5vh;
@@ -49,7 +21,6 @@
   box-shadow: 0 0.25vh 0.25vh rgba(0, 0, 0, 0.2);
 }
 
-
 .main-button {
   width: 35vh;
   height: 5vh;
@@ -62,6 +33,7 @@
   box-shadow: 0 0.5vh 0.5vh rgba(0, 0, 0, 0.25);
   cursor: pointer;
   transition: all 0.2s ease;
+  z-index: 3;
 }
 
 .main-button:hover {
