@@ -6,7 +6,6 @@ import Username from './pages/Username';
 import Gender from './pages/Gender';
 import Welcome from './pages/Welcome';
 import Continue from './pages/Continue';
-import ContinueStart from './pages/ContinueStart';
 
 const AppRoutes = () => (
   <Routes>
@@ -15,7 +14,6 @@ const AppRoutes = () => (
     <Route path="/Gender" element={<Gender />} />
     <Route path="/Welcome" element={<Welcome />} />
     <Route path="/Continue" element={<Continue />} />
-    <Route path="/ContinueStart" element={<ContinueStart />} />
   </Routes>
 );
 

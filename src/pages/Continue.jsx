@@ -1,43 +1,42 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // axios 추가
+import axios from 'axios';
 import '../styles/Base.css';
 import '../styles/Continue.css';
-import '../components/Button.css';
-import '../components/Form.css';
+import '../styles/Button.css';
+import '../styles/Form.css';
 import FontStyles from '../components/FontStyles';
+import BackButton from '../components/BackButton';
 
 function Continue() {
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
-    setName(e.target.value);
+    setUsername(e.target.value);
     setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (name.trim() === '') {
+    if (username.trim() === '') {
       setError('이름을 입력해주세요.');
       return;
     }
 
     try {
-      // Axios로 서버에 POST 요청
-      const response = await axios.post('/api/continue', {
-        name: name.trim()
+      const response = await axios.post('/api/check', {
+        username: username.trim()
       });
 
-      console.log('서버 응답:', response.data);
-
-      // 서버에서 응답이 "success"이면 다음 페이지로 이동
-      if (response.data === 'success') {
-        navigate('/ContinueStart', { state: { name } });
+      if (response.data.available) {
+        // 사용 가능한 이름이면 오류로 처리
+        setError('존재하지 않는 이름입니다. 다시 확인해주세요.');
       } else {
-        setError('이름이 존재하지 않거나 오류가 발생했습니다.');
+        // 사용 중인 이름이니 이어하기 가능
+        navigate('/Welcome', { state: { username: username.trim(), isReturning: true } });
       }
     } catch (err) {
       console.error('서버 오류:', err);
@@ -49,11 +48,13 @@ function Continue() {
     <>
       <FontStyles />
       <div className="main-container">
-        <img className="background-img" src={process.env.PUBLIC_URL + '/img/background_gray.png'} alt="배경" />
+        <img
+          className="background-img"
+          src={process.env.PUBLIC_URL + '/img/background_gray.png'}
+          alt="배경"
+        />
 
-        <button className="back-button" onClick={() => navigate('/')}>
-          <img className="back-button-img" src={process.env.PUBLIC_URL + '/img/back_arrow.png'} alt="뒤로가기" />
-        </button>
+        <BackButton />
 
         <div className="continue-overlay">
           <form onSubmit={handleSubmit} className="name-box">
@@ -64,7 +65,7 @@ function Continue() {
               className={`name-box-input ${error ? 'input-error' : ''}`}
               type="text"
               placeholder="이름을 입력하세요"
-              value={name}
+              value={username}
               onChange={handleInputChange}
               maxLength="20"
               required
