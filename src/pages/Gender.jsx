@@ -3,9 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/Base.css";
 import "../styles/Gender.css";
-import "../components/Button.css";
-import "../components/Form.css";
+import "../styles/Button.css";
+import "../styles/Form.css";
 import FontStyles from "../components/FontStyles";
+import BackButton from '../components/BackButton';
 
 function Gender() {
   const navigate = useNavigate();
@@ -51,13 +52,7 @@ function Gender() {
           alt="배경"
         />
 
-        <button className="back-button" onClick={() => navigate(-1)}>
-          <img
-            className="back-button-img"
-            src={process.env.PUBLIC_URL + "/img/back_arrow.png"}
-            alt="뒤로가기"
-          />
-        </button>
+        <BackButton />
 
         <div className="gender-overlay">
           <p className="question-text">당신의 성별은 무엇인가요?</p>

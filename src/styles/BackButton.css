@@ -1,0 +1,27 @@
+.back-button {
+  width: 100%;
+  height: auto;
+  border: none;
+  background: none;
+  cursor: pointer;
+  z-index: 11;
+}
+
+.back-button-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.back-button-container {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  margin: 20px;
+  width: 50px; /* 버튼과 동일하게 고정 */
+  height: auto; /* 이미지 비율에 맞게 */
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
