@@ -7,9 +7,9 @@ import Reputation from "./Reputation";
 function BottomStats({ stats }) {
   return (
     <div className="bottom-stats-bar">
-      <Asset value={stats.asset} />
+      <Asset value={stats.money} />
       <Health value={stats.health} />
-      <Love value={stats.love} />
+      <Love value={stats.mental} />
       <Reputation value={stats.reputation} />
     </div>
   );
