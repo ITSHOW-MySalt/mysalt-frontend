@@ -6,11 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="aebe81d8-6309-4832-8187-d867082859bf" name="Changes" comment="proxy추가&#10;(상대경로로 수정)">
       <change afterPath="$PROJECT_DIR$/salt/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/Welcome.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/Welcome.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/styles/Gender.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/styles/Gender.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/salt" beforeDir="false" afterPath="$PROJECT_DIR$/salt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/Game.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/Game.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
