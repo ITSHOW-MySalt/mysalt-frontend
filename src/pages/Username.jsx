@@ -5,7 +5,7 @@ import "../styles/Username.css";
 import "../styles/Button.css";
 import "../styles/Form.css";
 import FontStyles from "../components/FontStyles";
-import BackButton from '../components/BackButton';
+import BackButton from "../components/BackButton";
 import axios from "axios";
 
 function Username() {
@@ -23,6 +23,12 @@ function Username() {
 
     if (username.trim() === "") {
       setError("닉네임을 입력해주세요.");
+      return;
+    }
+
+    const usernameRegex = /^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9]{1,15}$/;
+    if (!usernameRegex.test(username)) {
+      setError("닉네임은 특수문자를 제외한 1~15자리여야 해요.");
       return;
     }
 
