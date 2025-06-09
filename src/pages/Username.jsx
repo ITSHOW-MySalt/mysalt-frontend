@@ -44,6 +44,7 @@ function Username() {
       );
 
       if (response.data.available) {
+        localStorage.setItem("username", username);
         navigate("/gender", { state: { username } });
       } else {
         setError("이미 존재하는 닉네임입니다.");
