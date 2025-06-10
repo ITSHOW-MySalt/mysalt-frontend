@@ -8,7 +8,10 @@
       <change afterPath="$PROJECT_DIR$/salt/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/salt" beforeDir="false" afterPath="$PROJECT_DIR$/salt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/Game.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/Game.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Asset.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Asset.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Health.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Health.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Love.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Love.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Reputation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Reputation.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

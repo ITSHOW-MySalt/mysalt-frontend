@@ -42,7 +42,7 @@ function Health({ value, max = 100 }) {
       <div className="gauge-bar">
         <div className="gauge-fill" style={{ width: `${percentage}%` }}></div>
       </div>
-      <span className="gauge-value">{Math.round(displayValue)}</span>
+      {/* <span className="gauge-value">{Math.round(displayValue)}</span> */}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import '../styles/News.css';
 
 // props로 onClose 함수를 받도록 수정
-function News({ onClose }) {
+function NewsComponent({ onClose }) {
   return (
     <div className="news-modal-overlay" onClick={onClose}>
       <div className="news-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -27,4 +27,4 @@ function News({ onClose }) {
   );
 }
 
-export default News;
+export default NewsComponent;
