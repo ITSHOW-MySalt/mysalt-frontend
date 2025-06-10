@@ -31,12 +31,14 @@ function Game() {
 
   useEffect(() => {
     const username = localStorage.getItem("username");
+    console.log(username);
 
     if (username) {
       axios
-        .get("/api/init", { params: { username } })
+        .get("http://localhost:8089/api/init", { params: { username } })
         .then((res) => {
           const data = res.data;
+          console.log(data);
           setStats({
             money: data.ch_stat_money,
             health: data.ch_stat_health,
