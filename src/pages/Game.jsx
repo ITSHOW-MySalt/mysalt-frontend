@@ -29,35 +29,8 @@ function Game() {
     reputation: 0,
   });
 
-<<<<<<< HEAD
   // 게임 날짜 상태 추가
   const [gameDay, setGameDay] = useState(0); // D-Day면 0, D+1이면 1 이런 식
-=======
-  useEffect(() => {
-    const username = localStorage.getItem("username");
-    console.log(username);
-
-    if (username) {
-      axios
-        .get("http://localhost:8089/api/init", { params: { username } })
-        .then((res) => {
-          const data = res.data;
-          console.log(data);
-          setStats({
-            money: data.ch_stat_money,
-            health: data.ch_stat_health,
-            mental: data.ch_stat_mental,
-            reputation: data.ch_stat_rep,
-          });
-        })
-        .catch((err) => {
-          console.error("게임 초기화 데잍 로딩 실패", err);
-        });
-    } else {
-      console.error("username 없음");
-    }
-  }, []);
->>>>>>> upstream/main
 
   const [showNews, setShowNews] = useState(false);
 
@@ -65,8 +38,6 @@ function Game() {
   const toggleNews = () => {
     setShowNews(!showNews);
   };
-
-  // 나중에 선택지에 따라 setStats로 값 변경 가능
 
   // 컴포넌트 처음 마운트될 때 백엔드에서 초기 게임 데이터 가져오기
   useEffect(() => {
@@ -88,9 +59,9 @@ function Game() {
           setGameDay(data.game_day);
         })
         .catch((err) => {
-          console.error("게임 초기화 데잍 로딩 실패", err);
-           // 백엔드 데이터 로딩 실패 시 기본 날짜 설정
-           setGameDay(0); // 예시: 실패 시 D-Day로 시작
+          console.error("게임 초기화 데이터 로딩 실패", err);
+          // 백엔드 데이터 로딩 실패 시 기본 날짜 설정
+          setGameDay(0); // 예시: 실패 시 D-Day로 시작
         });
     } else {
       console.error("username 없음");
@@ -131,7 +102,6 @@ function Game() {
 
       {/* HeaderBar 컴포넌트 사용 및 props 전달 */}
       <HeaderBar gameDay={gameDay} toggleNews={toggleNews} />
-
 
       {/* 게임 메인 콘텐츠 영역 */}
       <div className="game-overlay">
@@ -180,7 +150,6 @@ function Game() {
 
       {/* News 상태가 true일 때만 News 보여주기 (뉴스 창 컴포넌트 사용) */}
       {showNews && <News onClose={toggleNews} />}
-
     </div>
   );
 }
