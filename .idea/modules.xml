@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/mysalt-frontend.iml" filepath="$PROJECT_DIR$/.idea/mysalt-frontend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/salt-react.iml" filepath="$PROJECT_DIR$/.idea/salt-react.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/salt.main.iml" filepath="$PROJECT_DIR$/.idea/modules/salt.main.iml" />
     </modules>
   </component>
 </project>

@@ -15,9 +15,9 @@ function WelcomeScreen() {
 
   const handleClick = () => {
     if (isReturning) {
-      navigate("/nextStep"); // 이어하기
+      navigate("/Game"); // 이어하기
     } else {
-      navigate("/game"); // 새로 시작
+      navigate("/Game"); // 새로 시작
     }
   };
 

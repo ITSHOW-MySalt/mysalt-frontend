@@ -12,7 +12,7 @@
 
 .gender-button{
   display: flex;
-  flex-direction: ;
+  flex-direction: auto;
   flex-direction: column;
   gap: 3vh;
 }

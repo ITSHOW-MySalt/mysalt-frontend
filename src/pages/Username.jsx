@@ -5,7 +5,7 @@ import "../styles/Username.css";
 import "../styles/Button.css";
 import "../styles/Form.css";
 import FontStyles from "../components/FontStyles";
-import BackButton from '../components/BackButton';
+import BackButton from "../components/BackButton";
 import axios from "axios";
 
 function Username() {
@@ -58,7 +58,13 @@ function Username() {
           alt="배경"
         />
 
-        <BackButton />
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <img
+            className="back-button-img"
+            src={process.env.PUBLIC_URL + "/img/back_arrow.png"}
+            alt="뒤로가기"
+          />
+        </button>
 
         <div className="username-overlay">
           <form onSubmit={handleSubmit} className="name-box">
