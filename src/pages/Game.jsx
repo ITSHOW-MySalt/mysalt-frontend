@@ -29,8 +29,35 @@ function Game() {
     reputation: 0,
   });
 
+<<<<<<< HEAD
   // 게임 날짜 상태 추가
   const [gameDay, setGameDay] = useState(0); // D-Day면 0, D+1이면 1 이런 식
+=======
+  useEffect(() => {
+    const username = localStorage.getItem("username");
+    console.log(username);
+
+    if (username) {
+      axios
+        .get("http://localhost:8089/api/init", { params: { username } })
+        .then((res) => {
+          const data = res.data;
+          console.log(data);
+          setStats({
+            money: data.ch_stat_money,
+            health: data.ch_stat_health,
+            mental: data.ch_stat_mental,
+            reputation: data.ch_stat_rep,
+          });
+        })
+        .catch((err) => {
+          console.error("게임 초기화 데잍 로딩 실패", err);
+        });
+    } else {
+      console.error("username 없음");
+    }
+  }, []);
+>>>>>>> upstream/main
 
   const [showNews, setShowNews] = useState(false);
 
