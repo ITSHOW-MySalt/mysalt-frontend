@@ -67,11 +67,11 @@ function Continue() {
               placeholder="이름을 입력하세요"
               value={username}
               onChange={handleInputChange}
-              maxLength="20"
+              maxLength="15"
               required
             />
             <div className="continue-hint">
-              <p className="hint">20자 이내</p>
+              <p className="hint">15자 이내</p>
             </div>
             <button className="next-button" type="submit">다음으로</button>
             {error && <div className="error-text"><p>{error}</p></div>}

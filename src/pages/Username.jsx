@@ -26,6 +26,12 @@ function Username() {
       return;
     }
 
+    const usernameRegex = /^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9]{1,15}$/;
+    if (!usernameRegex.test(username)) {
+      setError("닉네임은 특수문자를 제외한 1~15자리여야 해요.");
+      return;
+    }
+
     try {
       const response = await axios.post(
         "/api/check",
@@ -38,6 +44,7 @@ function Username() {
       );
 
       if (response.data.available) {
+        localStorage.setItem("username", username);
         navigate("/gender", { state: { username } });
       } else {
         setError("이미 존재하는 닉네임입니다.");
@@ -58,13 +65,7 @@ function Username() {
           alt="배경"
         />
 
-        <button className="back-button" onClick={() => navigate(-1)}>
-          <img
-            className="back-button-img"
-            src={process.env.PUBLIC_URL + "/img/back_arrow.png"}
-            alt="뒤로가기"
-          />
-        </button>
+        <BackButton />
 
         <div className="username-overlay">
           <form onSubmit={handleSubmit} className="name-box">
@@ -81,7 +82,7 @@ function Username() {
               required
             />
             <div className="username-hint">
-              <p className="hint">중복 불가, 20자 이내</p>
+              <p className="hint">중복 불가, 15자 이내</p>
             </div>
             {error && (
               <div className="error-text">

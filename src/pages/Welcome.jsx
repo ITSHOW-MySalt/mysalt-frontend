@@ -14,11 +14,7 @@ function WelcomeScreen() {
   const isReturning = location.state?.isReturning || false;
 
   const handleClick = () => {
-    if (isReturning) {
-      navigate("/Game"); // 이어하기
-    } else {
-      navigate("/Game"); // 새로 시작
-    }
+    navigate("/Game", { state: { username, isReturning } });
   };
 
   return (
