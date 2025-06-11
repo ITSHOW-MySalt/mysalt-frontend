@@ -1,0 +1,56 @@
+/* 선택지 버튼들을 감싸는 컨테이너 */
+.game-choices,
+.choice-buttons-center {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 400px;
+  z-index: 10;
+  box-sizing: border-box;
+  display: flex;
+  gap: 20px;
+}
+
+/* 다중 선택지일 때 세로 방향 정렬 */
+.game-choices {
+  flex-direction: column;
+}
+
+/* 중앙 버튼일 때 가로 방향 중앙 정렬 */
+.choice-buttons-center {
+  justify-content: center;
+  flex-direction: row;
+}
+
+/* 개별 선택지 버튼 스타일 */
+.choice-button,
+.choice-buttons-center button {
+  display: block;
+  width: 100%;
+  padding: 15px 20px;
+  background-color: rgba(47, 62, 126, 0.9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
+}
+
+/* 중앙 버튼 너비 조절 (최대 300px 정도) */
+.choice-buttons-center button {
+  width: auto;
+  min-width: 120px;
+  max-width: 300px;
+}
+
+/* 버튼 호버 효과 */
+.choice-button:hover,
+.choice-buttons-center button:hover {
+  background-color: rgba(60, 77, 140, 1);
+}

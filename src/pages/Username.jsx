@@ -82,7 +82,7 @@ function Username() {
               required
             />
             <div className="username-hint">
-              <p className="hint">중복 불가, 20자 이내</p>
+              <p className="hint">중복 불가, 15자 이내</p>
             </div>
             {error && (
               <div className="error-text">

@@ -6,7 +6,7 @@ import Username from './pages/Username';
 import Gender from './pages/Gender';
 import Welcome from './pages/Welcome';
 import Continue from './pages/Continue';
-import Game from './pages/Game'; 
+import Game from './pages/Game';
 
 const AppRoutes = () => (
   <Routes>

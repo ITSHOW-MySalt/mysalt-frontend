@@ -1,110 +1,97 @@
-.main-container {
-  width: 100%; height: 100vh;
-  position: relative; overflow: hidden;
-}
-.background-img {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%;
-  object-fit: cover; z-index: 1;
-}
+
 /* 상단 바 */
 .header-bar {
   position: absolute; top: 0; left: 0;
   width: 100%;
-  display: flex; justify-content: space-between; align-items: center;
-  background-color:  #3C454F; color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #3C454F;
+  color: white;
   padding: 10px 20px;
-  font-weight: bold; font-size: 1.2rem;
-  z-index: 10; box-sizing: border-box;
+  font-weight: bold;
+  font-size: 1.2rem;
+  z-index: 10;
+  box-sizing: border-box;
 }
+
 /* 하단 스탯 바 */
 .bottom-stats-bar {
   position: absolute;
-  bottom: 300px; /* 바 위아래 위치 */
+  bottom: 300px;
   left: 0;
   width: 100%;
-  display: flex; justify-content: space-around;
+  display: flex;
+  justify-content: space-around;
   background-color: #3C454F;
   padding: 10px 0;
-  z-index: 10; box-sizing: border-box;
+  z-index: 10;
+  box-sizing: border-box;
 }
+
 /* 스토리 텍스트 박스 */
 .game-overlay {
   position: absolute;
-  top: 45vh; /* 박스 위아래 위치 */
-  left: 50%; transform: translateX(-50%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 가운데 정렬 */
   z-index: 5;
-  color: #333;
-  display: flex; flex-direction: column; align-items: center;
-  gap: 16px;
+
   background-color: rgba(255, 255, 255, 0.9);
-  padding: 20px; border-radius: 10px;
-  max-width: 80%; width: 90%;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 800px;
+  height: 110px; /* ✅ 고정 높이 */
   box-sizing: border-box;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  max-height: 60vh; overflow-y: auto;
-  margin-top: -20px; /* 박스 위로 올리기 */
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* ✅ 텍스트 수직 정렬 */
+  align-items: center;
+  overflow-y: auto; /* ✅ 줄 수 많을 때 스크롤 */
 }
-.game-story-text {
-  margin-bottom: 20px;
-}
+
 /* 스탯 게이지 컨테이너 */
 .stat-gauge {
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   gap: 1px;
-  color: white; font-weight: bold; font-size: 0.9rem;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
   justify-content: center;
 }
+
 .stat-icon {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
 }
+
 /* 게이지 바 배경 */
 .gauge-bar {
-  width: 40px; height: 15px;
+  width: 40px;
+  height: 15px;
   background-color: #111111;
-  border-radius: 5px; overflow: hidden;
+  border-radius: 5px;
+  overflow: hidden;
   position: relative;
 }
+
 /* 게이지 채우는 부분 */
 .gauge-fill {
   height: 100%;
   background-color: #ffd700;
   border-radius: 6px 0 0 6px;
 }
+
 /* 스탯 숫자 값 */
 .gauge-value {
-  width: 30px; text-align: right;
+  width: 30px;
+  text-align: right;
   flex-shrink: 0;
-  margin-left: -7px; /* 게이지 바에 더 가깝게 붙이기 */
-}
-
-/* 선택지 버튼들을 감싸는 컨테이너 */
-.game-choices {
-  position: absolute;
-  bottom: 100px; 
-  z-index: 10; 
-  display: flex; 
-  flex-direction: column; /* 버튼 세로로 쌓기 */
-  gap: 20px; /* 버튼 사이 간격 */
-
-}
-/* 개별 선택지 버튼 스타일 */
-.choice-button {
-  display: block;
-  width: 100%; 
-  padding: 15px 20px; /* 버튼 내부 여백 */
-  background-color: rgba(47, 62, 126, 0.9); 
-  color: white;
-  border: none; border-radius: 8px; 
-  text-align: center;
-  font-size: 1.1rem; font-weight: bold; 
-  cursor: pointer; 
-  box-sizing: border-box;
-  transition: background-color 0.3s ease; 
-}
-
-.choice-button:hover {
-    background-color: rgba(60, 77, 140, 1);
+  margin-left: -7px;
 }
