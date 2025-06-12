@@ -13,15 +13,15 @@ export async function handleEventType(
   const gameScriptData = getGameScript(username);
 
   switch (type) {
-    case 0: // 튜토리얼
-      console.log("💼 튜토리얼 이벤트 발생");
+    case 0: // 튜토리얼 & 고정이벤트
+      console.log("고정이벤트 발생");
       setIsEventActive(false);
 
       if (gameScriptData?.day1?.length > 0) {
         setEventStoryText(gameScriptData.day1[0]);
         setCurrentScriptIndex(0);
       } else {
-        setEventStoryText("튜토리얼 스크립트를 불러오지 못했습니다.");
+        setEventStoryText("고정 스크립트를 불러오지 못했습니다.");
       }
       break;
 
@@ -37,18 +37,6 @@ export async function handleEventType(
       }
       break;
 
-    case 2: // 고정 이벤트
-      console.log("📢 고정 이벤트 발생");
-      setIsEventActive(false);
-      const dayKey = `day${gameDay}`;
-      if (gameScriptData?.[dayKey]?.length > 0) {
-        setEventStoryText(gameScriptData[dayKey][0]);
-        setCurrentScriptIndex(0);
-      } else {
-        setEventStoryText(`고정 이벤트 스크립트를 찾을 수 없습니다 (day${gameDay})`);
-      }
-      break;
-
     case 3:
       console.log("🏥 알바 이벤트 발생");
       setIsEventActive(true);
@@ -58,7 +46,7 @@ export async function handleEventType(
     case 4:
       console.log("🎭 뉴스 이벤트 발생");
       setIsEventActive(true);
-      setEventStoryText("새로운 뉴스가 있습니다. (뉴스 모달 토글 가능)");
+      setEventStoryText("뉴스 이벤트 발생");
       break;
 
     case 5:

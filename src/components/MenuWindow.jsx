@@ -1,17 +1,47 @@
 import React from "react";
-import "../styles/MenuWindow.css"; 
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import "../styles/MenuWindow.css";
 
-function MenuWindow({ onClose }) {
+function MenuWindow({ onClose, username }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("username");
+    navigate("/");
+  };
+
+  const handleResetProgress = async () => {
+    if (!username) {
+      alert("로그인 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    try {
+      const response = await axios.post("/api/reset-progress", {
+        username: username
+      });
+
+      if (response.status === 200) {
+        alert("진행도가 초기화되었습니다.");
+        navigate("/", { state: { username } }); // 초기화 후 재시작
+      } else {
+        alert("진행도 초기화에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("에러 발생:", error);
+      alert("서버 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <>
-      {/* 배경 어둡게 깔기 */}
       <div className="menu-overlay" onClick={onClose}></div>
-
-      {/* 메뉴창 박스 */}
       <div className="menu-window">
         <button className="menu-item" onClick={() => alert("도감 클릭")}>도감</button>
         <button className="menu-item" onClick={() => alert("설정 클릭")}>설정</button>
-        <button className="menu-item" onClick={() => alert("시작화면 클릭")}>시작화면</button>
+        <button className="menu-item" onClick={handleResetProgress}>진행도 리셋</button>
+        <button className="menu-item" onClick={handleLogout}>로그아웃</button>
       </div>
     </>
   );
