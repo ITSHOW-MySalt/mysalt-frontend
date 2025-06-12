@@ -48,6 +48,12 @@ function Game() {
       });
   }, [username]);
 
+  // day 와 stats 업데이트 함수
+  const updateDayAndStats = (newDay, newStats) => {
+    setGameDay(newDay);
+    setStats(newStats);
+  };
+
   const toggleNews = () => {
     setShowNews(!showNews);
     if (!showNews) setLastNewsOpenedDay(gameDay);
@@ -61,7 +67,11 @@ function Game() {
 
   return (
     <div className="main-container">
-      <GameScreen username={username} gameDay={gameDay} />
+      <GameScreen
+        username={username}
+        gameDay={gameDay}
+        onDayIncrement={updateDayAndStats}
+      />
 
       {/* HeaderBar 컴포넌트 사용 및 props 전달 */}
       {/* HeaderBar에 메뉴 토글 함수도 prop으로 전달 */}
