@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { handleEventType } from "../utils/GameEvents";
 import getGameScript from "../data/GameScript";
 import "../styles/GameScreen.css";
 import ChoiceButtons from "./ChoiceButtons";
 
-function GameScreen({ username, gameDay }) {
+function GameScreen({ username, gameDay, onDayIncrement }) {
   const [gameScript, setGameScript] = useState({});
   const [currentScriptIndex, setCurrentScriptIndex] = useState(0);
   const [eventStoryText, setEventStoryText] = useState("");
@@ -47,7 +48,7 @@ function GameScreen({ username, gameDay }) {
     }
   }, [username]);
 
-  const goToNextScript = () => {
+  const goToNextScript = async () => {
     const dayKey = `day${gameDay}`;
     const currentDayScript = gameScript[dayKey];
     const nextIndex = currentScriptIndex + 1;
@@ -57,6 +58,30 @@ function GameScreen({ username, gameDay }) {
       setEventStoryText(currentDayScript[nextIndex]);
     } else {
       console.log("📘 더 이상 다음 대사가 없습니다.");
+
+      try {
+        // 서버에 day 1 증가 요청
+        await axios.post("/api/next-day", { username });
+
+        // 증가된 데이터 다시 받아오기
+        const res = await axios.get(`/api/init?username=${username}`);
+        const data = res.data;
+
+        // 부모 컴포넌트에 업데이트 요청
+        onDayIncrement(data.current_day, {
+          money: data.ch_stat_money,
+          health: data.ch_stat_health,
+          mental: data.ch_stat_mental,
+          reputation: data.ch_stat_rep,
+        });
+
+        // 스크립트 인덱스 초기화 및 첫 대사 보여주기
+        setCurrentScriptIndex(0);
+        setEventStoryText(gameScript[`day${data.current_day}`]?.[0] || "");
+        setIsEventActive(false);
+      } catch (error) {
+        console.error("Day 증가 실패:", error);
+      }
     }
   };
 
