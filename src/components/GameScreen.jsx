@@ -11,18 +11,21 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
   const [eventStoryText, setEventStoryText] = useState("");
   const [isEventActive, setIsEventActive] = useState(false);
   const [choices, setChoices] = useState([]);
+  const [backgroundImage, setBackgroundImage] = useState("background_home.png"); // ⬅️ 배경 상태 추가
 
   useEffect(() => {
     if (!username || gameDay === 0) return;
 
     const initEvent = async () => {
+      const eventType = await fetchEventType();
       await handleEventType(
-        await fetchEventType(),
+        eventType,
         setEventStoryText,
         setIsEventActive,
         setCurrentScriptIndex,
         gameDay,
-        username
+        username,
+        setBackgroundImage // ⬅️ 배경 세터 전달
       );
     };
 
@@ -60,14 +63,10 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
       console.log("📘 더 이상 다음 대사가 없습니다.");
 
       try {
-        // 서버에 day 1 증가 요청
         await axios.post("/api/next-day", { username });
-
-        // 증가된 데이터 다시 받아오기
         const res = await axios.get(`/api/init?username=${username}`);
         const data = res.data;
 
-        // 부모 컴포넌트에 업데이트 요청
         onDayIncrement(data.current_day, {
           money: data.ch_stat_money,
           health: data.ch_stat_health,
@@ -75,7 +74,6 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
           reputation: data.ch_stat_rep,
         });
 
-        // 스크립트 인덱스 초기화 및 첫 대사 보여주기
         setCurrentScriptIndex(0);
         setEventStoryText(gameScript[`day${data.current_day}`]?.[0] || "");
         setIsEventActive(false);
@@ -96,13 +94,8 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
       <div className="main-container">
         <img
           className="background-img"
-          src={process.env.PUBLIC_URL + "/img/background_gray.png"}
+          src={process.env.PUBLIC_URL + "/img/" + backgroundImage}
           alt="게임 배경"
-        />
-        <img
-          className="background-home"
-          src={process.env.PUBLIC_URL + "/img/background_home.png"}
-          alt="집 배경"
         />
 
         <div className="game-overlay">
