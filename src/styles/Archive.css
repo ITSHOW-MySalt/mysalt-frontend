@@ -1,0 +1,71 @@
+/* 전체 컨테이너 */
+.Archive-container {
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(to bottom, #3a3f4a, #6b7586);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  /* 상단 헤더 */
+  .Archive-header {
+    display: flex;
+    gap: 40px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #b0b0b0;
+    margin-bottom: 20px;
+    user-select: none;
+  }
+  
+  /* 활성 탭 스타일 */
+  .Archive-header .active {
+    color: white;
+    border-bottom: 2px solid white;
+    padding-bottom: 5px;
+    cursor: default;
+  }
+  
+  /* 비활성 탭은 클릭 가능 */
+  .Archive-header button {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+  }
+  
+  /* 메인 콘텐츠 영역 */
+  .Archive-content {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  
+  /* 엔딩, 삽화 탭 각각의 이미지 박스 스타일 */
+  .ending-tab, .illustration-tab {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+  
+  /* 이미지 박스 공통 스타일 */
+  .ending-tab img, .illustration-tab img {
+    width: 150px;
+    height: 200px;
+    border-radius: 10px;
+    object-fit: cover;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease;
+  }
+  
+  .ending-tab img:hover, .illustration-tab img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+  }
+  

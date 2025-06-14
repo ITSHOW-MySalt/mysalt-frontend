@@ -1,17 +1,23 @@
 import React from "react";
-import "../styles/MenuWindow.css"; 
+import { useNavigate } from "react-router-dom";
+import "../styles/MenuWindow.css";
 
 function MenuWindow({ onClose }) {
+  const navigate = useNavigate();
+
+  const goToEncyclopedia = () => {
+    onClose(); // 메뉴창 닫기
+    navigate("/archive"); // 도감 페이지로 이동 
+  };
+
   return (
     <>
-      {/* 배경 어둡게 깔기 */}
       <div className="menu-overlay" onClick={onClose}></div>
 
-      {/* 메뉴창 박스 */}
       <div className="menu-window">
-        <button className="menu-item" onClick={() => alert("도감 클릭")}>도감</button>
-        <button className="menu-item" onClick={() => alert("설정 클릭")}>설정</button>
-        <button className="menu-item" onClick={() => alert("시작화면 클릭")}>시작화면</button>
+        <button className="menu-item" onClick={goToEncyclopedia}>도감</button>
+        <button className="menu-item" onClick={() => alert("진행도 초기화 클릭")}>진행도 초기화</button>
+        <button className="menu-item" onClick={() => alert("로그아웃 클릭")}>로그아웃</button>
       </div>
     </>
   );
