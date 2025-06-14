@@ -1,11 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import "../styles/Game.css";
 
 import Date from "./Date";
 import MenuComponent from "./Menu";
+import MenuWindow from "./MenuWindow";
 
-function HeaderBar({ gameDay, toggleNews, lastNewsOpenedDay }) {
+function HeaderBar({ gameDay, toggleNews, lastNewsOpenedDay, username }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const isNewsButtonEnabled = gameDay % 7 === 1 && lastNewsOpenedDay !== gameDay;
+
+  const handleMenuClick = () => {
+    setIsMenuOpen(true);
+  };
+
+  const handleCloseMenu = () => {
+    setIsMenuOpen(false);
+  };
 
   return (
     <div className="header-bar">
@@ -25,8 +36,11 @@ function HeaderBar({ gameDay, toggleNews, lastNewsOpenedDay }) {
           />
         </button>
 
-        <MenuComponent />
+        <MenuComponent onClick={handleMenuClick} />
       </div>
+
+      {/* 메뉴창에 username을 전달하도록 수정 */}
+      {isMenuOpen && <MenuWindow onClose={handleCloseMenu} username={username} />}
     </div>
   );
 }
