@@ -11,7 +11,9 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
   const [eventStoryText, setEventStoryText] = useState("");
   const [isEventActive, setIsEventActive] = useState(false);
   const [choices, setChoices] = useState([]);
-  const [backgroundImage, setBackgroundImage] = useState("/img/background_gray.png");
+
+  const [backgroundImage] = useState("/img/background_gameUi.png"); // 항상 보이는 UI 배경
+  const [eventBackgroundImage, setEventBackgroundImage] = useState(null); // 상황에 따라 보이는 배경
 
   useEffect(() => {
     if (!username || gameDay === 0) return;
@@ -26,16 +28,13 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         setCurrentScriptIndex,
         gameDay,
         username,
-        setBackgroundImage
+        setEventBackgroundImage
       );
 
-      // 선택지가 반환되었을 경우
       if (jobChoices && jobChoices.length > 0) {
-        console.log("✅ [GameScreen] 선택지 받아옴:", jobChoices);
         setChoices(jobChoices);
       } else {
         setChoices([]);
-        console.log("✅실패다용");
       }
     };
 
@@ -84,44 +83,46 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         setCurrentScriptIndex(0);
         setEventStoryText(getGameScript(username)[`day${data.current_day}`]?.[0] || "");
         setIsEventActive(false);
-        setChoices([]); // 새 날 시작 시 선택지 초기화
+        setChoices([]);
+        setEventBackgroundImage(null); // 다음날로 넘어가면 이벤트 배경 제거
       } catch (error) {
         console.error("❌ Day 증가 실패:", error);
       }
     }
   };
 
- const onChoiceSelected = (index) => {
-   console.log("🎯 선택지 선택됨:", index);
-   const choice = choices[index];
-   if (!choice) return;
+  const onChoiceSelected = (index) => {
+    const choice = choices[index];
+    if (!choice) return;
 
-   // 선택 결과 대사 업데이트
-   setEventStoryText(choice.result);
+    setEventStoryText(choice.result);
 
-   // 배경 업데이트 (이미지 경로에 맞게 조정 필요)
-   setBackgroundImage(`/img/${choice.background || 'background_gray.png'}`);
+    // 이벤트 배경 변경
+    setEventBackgroundImage(`/img/${choice.background || "background_home.png"}`);
 
-   // 스탯 반영 (예시)
-   onDayIncrement(gameDay, {
-     money: choice.stats.money,
-     health: choice.stats.health,
-     mental: choice.stats.mental,
-     reputation: choice.stats.rep,
-   });
+    // 스탯 반영
+    onDayIncrement(gameDay, {
+      money: choice.stats.money,
+      health: choice.stats.health,
+      mental: choice.stats.mental,
+      reputation: choice.stats.rep,
+    });
 
-   // 선택지 닫기
-   setChoices([]);
-
-   // 이벤트 계속할지 여부 판단 가능
-   setIsEventActive(false);
- };
-
+    setChoices([]);
+    setIsEventActive(false);
+  };
 
   return (
     <>
       <div className="main-container">
-        <img className="background-img" src={backgroundImage} alt="게임 배경" />
+        {/* 항상 보이는 회색 UI 배경 */}
+        <img className="background-img" src={backgroundImage} alt="기본 UI 배경" />
+
+        {/* 상황에 따라 보이는 장소 배경 */}
+        {eventBackgroundImage && (
+          <img className="background-home" src={eventBackgroundImage} alt="이벤트 배경" />
+        )}
+
         <div className="game-overlay">
           <div className="game-story-text">
             <p>{eventStoryText}</p>
@@ -129,22 +130,12 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         </div>
       </div>
 
-      {/* ✅ 조건에 따라 정확하게 버튼 렌더링 */}
-      {choices.length > 0 && isEventActive && (
-        <ChoiceButtons
-          choices={choices}
-          onChoiceSelected={onChoiceSelected}
-          onNext={goToNextScript}
-        />
-      )}
-
-      {choices.length === 0 && !isEventActive && (
-        <ChoiceButtons
-          choices={[]}
-          onChoiceSelected={onChoiceSelected}
-          onNext={goToNextScript}
-        />
-      )}
+      {/* 선택지 버튼 렌더링 */}
+      <ChoiceButtons
+        choices={choices}
+        onChoiceSelected={onChoiceSelected}
+        onNext={goToNextScript}
+      />
     </>
   );
 }

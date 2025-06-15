@@ -49,9 +49,14 @@ function Game() {
       });
   }, [username]);
 
-  const updateDayAndStats = (newDay, newStats) => {
+  const updateDayAndStats = (newDay, statDelta) => {
     setGameDay(newDay);
-    setStats(newStats);
+    setStats((prevStats) => ({
+      money: prevStats.money + statDelta.money,
+      health: prevStats.health + statDelta.health,
+      mental: prevStats.mental + statDelta.mental,
+      reputation: prevStats.reputation + statDelta.reputation,
+    }));
   };
 
   const toggleNews = () => {
