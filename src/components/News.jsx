@@ -1,22 +1,55 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import '../styles/News.css';
 
-// props로 onClose 함수를 받도록 수정
 function NewsComponent({ onClose }) {
+  const [newsList, setNewsList] = useState([]);
+
+  useEffect(() => {
+    // 1) 먼저 랜덤 3개 뉴스 ID 저장 (필요시)
+    const saveRandomNewsIds = async () => {
+      try {
+        await axios.post('/api/news/random-ids', null, {
+          params: { gameProgressId: 1 },
+        });
+        console.log('랜덤 뉴스 3개 저장 완료');
+      } catch (error) {
+        console.error('뉴스 저장 실패:', error);
+      }
+    };
+
+    // 2) 저장된 뉴스 3개 모두 조회
+    const fetchSavedNews = async () => {
+      try {
+        const response = await axios.get('/api/news/saved-news', {
+          params: { gameProgressId: 1 },
+        });
+        setNewsList(response.data);
+      } catch (error) {
+        console.error('뉴스 불러오기 실패:', error);
+      }
+    };
+
+    // 저장하고 조회하기
+    saveRandomNewsIds().then(fetchSavedNews);
+
+  }, []);
+
   return (
     <div className="news-modal-overlay" onClick={onClose}>
       <div className="news-modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>뉴스</h2>
+        <h2>뉴스 목록</h2>
         <div className="news-list">
-          <p>서울 낮 최고 온도 40도... 야외활동 자제</p>
-          <p>수박 한 통 2만 5천원...여름 수박도 금과일</p>
-          <p>무더위 속 냉방병 환자 증가…‘건강과 에어컨 사이’ 고민</p>
-          {/* 더 많은 뉴스 항목 추가 */}
+          {newsList.length === 0 ? (
+            <p>뉴스가 없습니다.</p>
+          ) : (
+            newsList.map((newsItem, idx) => (
+              <p key={idx}>{newsItem.news /* 또는 newsItem.title 등 실제 필드명으로 변경 */}</p>
+            ))
+          )}
         </div>
-
-        {/* 닫기 버튼 */}
         <button className="news-close-button" onClick={onClose}>
-        <img
+          <img
             src={process.env.PUBLIC_URL + "/img/closebtn.png"}
             alt="닫기"
             className="close-icon"
