@@ -1,71 +1,144 @@
 /* 전체 컨테이너 */
 .Archive-container {
-    width: 100%;
-    height: 100vh;
-    background: linear-gradient(to bottom, #3a3f4a, #6b7586);
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(to bottom, #3a3f4a, #6b7586);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+  color: white;
+  position: relative;
+  align-items: center; /* 컨테이너의 자식 요소들(헤더, 콘텐츠)을 가로 중앙 정렬 */
+}
+
+/* 상단 헤더 */
+.Archive-header {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #b0b0b0;
+  margin-bottom: 20px;
+  user-select: none;
+  width: 100%; 
+  justify-content: center;
+}
+
+/* 탭 버튼들을 감싸는 div */
+.Archive-header .tabs {
     display: flex;
-    flex-direction: column;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-  
-  /* 상단 헤더 */
-  .Archive-header {
-    display: flex;
-    gap: 40px;
-    font-size: 18px;
-    font-weight: 600;
-    color: #b0b0b0;
-    margin-bottom: 20px;
-    user-select: none;
-  }
-  
-  /* 활성 탭 스타일 */
-  .Archive-header .active {
-    color: white;
-    border-bottom: 2px solid white;
-    padding-bottom: 5px;
-    cursor: default;
-  }
-  
-  /* 비활성 탭은 클릭 가능 */
-  .Archive-header button {
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    padding: 0;
-    font-family: inherit;
-  }
-  
-  /* 메인 콘텐츠 영역 */
-  .Archive-content {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-  
-  /* 엔딩, 삽화 탭 각각의 이미지 박스 스타일 */
-  .ending-tab, .illustration-tab {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-  }
-  
-  /* 이미지 박스 공통 스타일 */
-  .ending-tab img, .illustration-tab img {
-    width: 150px;
-    height: 200px;
-    border-radius: 10px;
-    object-fit: cover;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: transform 0.2s ease;
-  }
-  
-  .ending-tab img:hover, .illustration-tab img:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
-  }
-  
+    gap: 40px; /* 탭 버튼 간의 간격 */
+    position: relative; 
+    z-index: 11;
+}
+
+.Archive-header .tabs button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-size: 18px;
+}
+
+.Archive-header .tabs button.active {
+  color: white;
+  border-bottom: 2px solid white;
+  padding-bottom: 5px;
+  cursor: default;
+}
+
+.back-button-1 {
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  position: absolute; 
+  left: 600px; 
+  top: 20px;
+  z-index: 10; /* 다른 요소들 위에 표시 */
+}
+
+.back-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* 메인 콘텐츠 영역 */
+.Archive-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* 자식 요소(카드 그리드)를 세로로 배치 */
+  align-items: center; 
+  width: 100%; /* 콘텐츠 영역이 전체 너비를 차지하도록 설정 */
+  overflow-y: auto; /* 내용이 많아지면 스크롤 가능하도록 */
+}
+
+/* 엔딩, 삽화 탭 각각의 이미지 박스 스타일 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 150px);
+  gap: 20px;
+  justify-content: center; /* 그리드 아이템들을 그리드 컨테이너 내에서 가로 중앙 정렬 */
+}
+
+/* 카드 스타일 */
+.card {
+  width: 150px;
+  height: 200px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  background: #ccc;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.card.unlocked {
+  background: #999;
+  color: white;
+}
+
+.card-label {
+  position: absolute;
+  bottom: 40px;
+  left: 10px;
+  background: rgba(0,0,0,0.6);
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 14px;
+  color: white;
+}
+
+.card-title {
+  position: absolute;
+  bottom: 15px;
+  left: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  color: white;
+}
+
+.card.locked {
+  background: #ddd;
+}
+
+.card.locked img {
+  width: 50px;
+  height: 50px;
+  opacity: 0.5;
+}
+
+/* 호버 효과 */
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+}

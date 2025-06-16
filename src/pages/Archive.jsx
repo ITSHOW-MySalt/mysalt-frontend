@@ -1,39 +1,97 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/Archive.css";
 
 function Archive() {
-  const [activeTab, setActiveTab] = useState("ending"); // 'ending' or 'illustration'
+  const [activeTab, setActiveTab] = useState("ending");
+  const navigate = useNavigate();
 
   return (
     <div className="Archive-container">
       <header className="Archive-header">
-        <button
-          className={activeTab === "ending" ? "active" : ""}
-          onClick={() => setActiveTab("ending")}
-        >
-          엔딩
+        <button className="back-button-1" onClick={() => navigate(-1)}>
+          <img src="/img/back_arrow2.png" alt="뒤로가기" />
         </button>
-        <button
-          className={activeTab === "illustration" ? "active" : ""}
-          onClick={() => setActiveTab("illustration")}
-        >
-          삽화
-        </button>
+
+        <div className="tabs">
+          <button
+            className={activeTab === "ending" ? "active" : ""}
+            onClick={() => setActiveTab("ending")}
+          >
+            엔딩
+          </button>
+          <button
+            className={activeTab === "illustration" ? "active" : ""}
+            onClick={() => setActiveTab("illustration")}
+          >
+            삽화
+          </button>
+        </div>
       </header>
 
       <main className="Archive-content">
         {activeTab === "ending" && (
-          <div className="ending-tab">
-            {/* 엔딩 이미지들 보여주기 */}
-            <img src="/img/ending1.png" alt="엔딩 1" />
-            {/* 이미지 추가 */}
+          <div className="card-grid">
+            <div className="card unlocked">
+              <div className="card-label">ed. 01</div>
+              <div className="card-title">거지가 되어</div>
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
           </div>
         )}
+
         {activeTab === "illustration" && (
-          <div className="illustration-tab">
-            {/* 삽화 이미지들 보여주기 */}
-            <img src="/img/illustration1.png" alt="삽화 1" />
-            {/* 이미지 추가 */}
+          <div className="card-grid">
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
+            <div className="card locked">
+              <img src="/img/lock_icon.png" alt="잠금" />
+            </div>
           </div>
         )}
       </main>
