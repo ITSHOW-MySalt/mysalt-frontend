@@ -11,22 +11,31 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
   const [eventStoryText, setEventStoryText] = useState("");
   const [isEventActive, setIsEventActive] = useState(false);
   const [choices, setChoices] = useState([]);
-  const [backgroundImage, setBackgroundImage] = useState("background_home.png"); // ⬅️ 배경 상태 추가
+
+  const [backgroundImage] = useState("/img/background_gameUi.png"); // 항상 보이는 UI 배경
+  const [eventBackgroundImage, setEventBackgroundImage] = useState(null); // 상황에 따라 보이는 배경
 
   useEffect(() => {
     if (!username || gameDay === 0) return;
 
     const initEvent = async () => {
-      const eventType = await fetchEventType();
-      await handleEventType(
-        eventType,
+      const type = await fetchEventType();
+
+      const jobChoices = await handleEventType(
+        type,
         setEventStoryText,
         setIsEventActive,
         setCurrentScriptIndex,
         gameDay,
         username,
-        setBackgroundImage // ⬅️ 배경 세터 전달
+        setEventBackgroundImage
       );
+
+      if (jobChoices && jobChoices.length > 0) {
+        setChoices(jobChoices);
+      } else {
+        setChoices([]);
+      }
     };
 
     initEvent();
@@ -34,12 +43,10 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
 
   const fetchEventType = async () => {
     try {
-      const res = await fetch(`/api/events/next?username=${username}`);
-      const data = await res.json();
-      console.log("이벤트 타입 수신:", data);
-      return data;
+      const res = await axios.get(`/api/events/next?username=${username}`);
+      return res.data;
     } catch (err) {
-      console.error("이벤트 타입 로딩 실패:", err);
+      console.error("❌ 이벤트 타입 로딩 실패:", err);
       return null;
     }
   };
@@ -60,10 +67,9 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
       setCurrentScriptIndex(nextIndex);
       setEventStoryText(currentDayScript[nextIndex]);
     } else {
-      console.log("📘 더 이상 다음 대사가 없습니다.");
-
       try {
         await axios.post("/api/next-day", { username });
+
         const res = await axios.get(`/api/init?username=${username}`);
         const data = res.data;
 
@@ -75,16 +81,33 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         });
 
         setCurrentScriptIndex(0);
-        setEventStoryText(gameScript[`day${data.current_day}`]?.[0] || "");
+        setEventStoryText(getGameScript(username)[`day${data.current_day}`]?.[0] || "");
         setIsEventActive(false);
+        setChoices([]);
+        setEventBackgroundImage(null); // 다음날로 넘어가면 이벤트 배경 제거
       } catch (error) {
-        console.error("Day 증가 실패:", error);
+        console.error("❌ Day 증가 실패:", error);
       }
     }
   };
 
   const onChoiceSelected = (index) => {
-    console.log("선택지 선택됨:", index);
+    const choice = choices[index];
+    if (!choice) return;
+
+    setEventStoryText(choice.result);
+
+    // 이벤트 배경 변경
+    setEventBackgroundImage(`/img/${choice.background || "background_home.png"}`);
+
+    // 스탯 반영
+    onDayIncrement(gameDay, {
+      money: choice.stats.money,
+      health: choice.stats.health,
+      mental: choice.stats.mental,
+      reputation: choice.stats.rep,
+    });
+
     setChoices([]);
     setIsEventActive(false);
   };
@@ -92,11 +115,13 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
   return (
     <>
       <div className="main-container">
-        <img
-          className="background-img"
-          src={process.env.PUBLIC_URL + "/img/" + backgroundImage}
-          alt="게임 배경"
-        />
+        {/* 항상 보이는 회색 UI 배경 */}
+        <img className="background-img" src={backgroundImage} alt="기본 UI 배경" />
+
+        {/* 상황에 따라 보이는 장소 배경 */}
+        {eventBackgroundImage && (
+          <img className="background-home" src={eventBackgroundImage} alt="이벤트 배경" />
+        )}
 
         <div className="game-overlay">
           <div className="game-story-text">
@@ -105,13 +130,12 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         </div>
       </div>
 
-      {(choices.length > 0 || !isEventActive) && (
-        <ChoiceButtons
-          choices={choices}
-          onChoiceSelected={onChoiceSelected}
-          onNext={goToNextScript}
-        />
-      )}
+      {/* 선택지 버튼 렌더링 */}
+      <ChoiceButtons
+        choices={choices}
+        onChoiceSelected={onChoiceSelected}
+        onNext={goToNextScript}
+      />
     </>
   );
 }
