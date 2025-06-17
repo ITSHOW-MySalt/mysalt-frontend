@@ -126,16 +126,24 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
               mental: newsEventData.ch_stat2_mental || 0,
               reputation: newsEventData.ch_stat2_rep || 0,
             };
-        resultText = "";
+        resultText = index === 0 ? newsEventData.result1 : newsEventData.result2;
+
       } else if (choices.length > 0) {
         const selectedChoice = choices[index];
+
         selectedStats = selectedChoice?.stats || {
           money: 0,
           health: 0,
           mental: 0,
           reputation: 0,
         };
+
         resultText = selectedChoice?.result || "";
+
+        // ✅ 여기 추가: 배경 이미지 반영
+        if (selectedChoice?.background) {
+          setEventBackgroundImage(selectedChoice.background);
+        }
       }
 
       if (selectedStats) {
@@ -147,7 +155,7 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
           ch_stat_rep: currentStats.reputation + selectedStats.reputation,
         });
 
-        await onDayIncrement(gameDay, selectedStats); // ✅ 변화량으로 전달
+        await onDayIncrement(gameDay, selectedStats);
       }
 
       setChoices([]);
@@ -181,8 +189,26 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
         choices={
           newsEventData
             ? [
-                { text: newsEventData.choice1 },
-                { text: newsEventData.choice2 },
+                {
+                  text: newsEventData.choice1,
+                  stats: {
+                    money: newsEventData.ch_stat1_money || 0,
+                    health: newsEventData.ch_stat1_health || 0,
+                    mental: newsEventData.ch_stat1_mental || 0,
+                    reputation: newsEventData.ch_stat1_rep || 0,
+                  },
+                  result: newsEventData.result1 || "",
+                },
+                {
+                  text: newsEventData.choice2,
+                  stats: {
+                    money: newsEventData.ch_stat2_money || 0,
+                    health: newsEventData.ch_stat2_health || 0,
+                    mental: newsEventData.ch_stat2_mental || 0,
+                    reputation: newsEventData.ch_stat2_rep || 0,
+                  },
+                  result: newsEventData.result2 || "",
+                },
               ]
             : choices
         }
