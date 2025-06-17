@@ -1,3 +1,4 @@
+// GameScreen.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { handleEventType } from "../utils/GameEvents";
@@ -5,8 +6,8 @@ import getGameScript from "../data/GameScript";
 import "../styles/GameScreen.css";
 import ChoiceButtons from "./ChoiceButtons";
 
-function GameScreen({ username, gameDay, onDayIncrement }) {
-  const [usernameId, setUsernameId] = useState(null); // ✅ username_id 저장용
+function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
+  const [usernameId, setUsernameId] = useState(null);
   const [gameScript, setGameScript] = useState({});
   const [currentScriptIndex, setCurrentScriptIndex] = useState(0);
   const [eventStoryText, setEventStoryText] = useState("");
@@ -16,7 +17,6 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
   const [backgroundImage] = useState("/img/background_gameUi.png");
   const [eventBackgroundImage, setEventBackgroundImage] = useState(null);
 
-  // ✅ 사용자 ID 불러오기
   useEffect(() => {
     const fetchUserId = async () => {
       try {
@@ -30,7 +30,6 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
     if (username) fetchUserId();
   }, [username]);
 
-  // ✅ 이벤트 초기화
   useEffect(() => {
     if (!username || !usernameId || gameDay === 0) return;
 
@@ -49,11 +48,7 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         usernameId
       );
 
-      if (jobChoices && jobChoices.length > 0) {
-        setChoices(jobChoices);
-      } else {
-        setChoices([]);
-      }
+      setChoices(jobChoices && jobChoices.length > 0 ? jobChoices : []);
     };
 
     initEvent();
@@ -91,12 +86,14 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         const res = await axios.get(`/api/init?username=${username}`);
         const data = res.data;
 
-        onDayIncrement(data.current_day, {
-          money: data.ch_stat_money,
-          health: data.ch_stat_health,
-          mental: data.ch_stat_mental,
-          reputation: data.ch_stat_rep,
-        });
+        const delta = {
+          money: 0,
+          health: 0,
+          mental: 0,
+          reputation: 0,
+        };
+
+        await onDayIncrement(data.current_day, delta); // 변화 없음
 
         setCurrentScriptIndex(0);
         setEventStoryText(getGameScript(username)[`day${data.current_day}`]?.[0] || "");
@@ -111,31 +108,59 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
   };
 
   const onChoiceSelected = async (index) => {
-    if (newsEventData) {
-      const selected = index === 0 ? {
-        money: newsEventData.ch_stat1_money,
-        health: newsEventData.ch_stat1_health,
-        mental: newsEventData.ch_stat1_mental,
-        reputation: newsEventData.ch_stat1_rep,
-      } : {
-        money: newsEventData.ch_stat2_money,
-        health: newsEventData.ch_stat2_health,
-        mental: newsEventData.ch_stat2_mental,
-        reputation: newsEventData.ch_stat2_rep,
-      };
+    try {
+      let selectedStats = null;
+      let resultText = "";
 
-      // 1. 스탯 적용
-      await onDayIncrement(gameDay, selected);
+      if (newsEventData) {
+        selectedStats = index === 0
+          ? {
+              money: newsEventData.ch_stat1_money || 0,
+              health: newsEventData.ch_stat1_health || 0,
+              mental: newsEventData.ch_stat1_mental || 0,
+              reputation: newsEventData.ch_stat1_rep || 0,
+            }
+          : {
+              money: newsEventData.ch_stat2_money || 0,
+              health: newsEventData.ch_stat2_health || 0,
+              mental: newsEventData.ch_stat2_mental || 0,
+              reputation: newsEventData.ch_stat2_rep || 0,
+            };
+        resultText = "";
+      } else if (choices.length > 0) {
+        const selectedChoice = choices[index];
+        selectedStats = selectedChoice?.stats || {
+          money: 0,
+          health: 0,
+          mental: 0,
+          reputation: 0,
+        };
+        resultText = selectedChoice?.result || "";
+      }
 
-      // 2. 상태 초기화
-      setNewsEventData(null);
+      if (selectedStats) {
+        await axios.post("/api/update-progress", {
+          username,
+          ch_stat_money: currentStats.money + selectedStats.money,
+          ch_stat_health: currentStats.health + selectedStats.health,
+          ch_stat_mental: currentStats.mental + selectedStats.mental,
+          ch_stat_rep: currentStats.reputation + selectedStats.reputation,
+        });
+
+        await onDayIncrement(gameDay, selectedStats); // ✅ 변화량으로 전달
+      }
+
+      setChoices([]);
       setIsEventActive(false);
-
-      // 3. 다음 날로 자동 이동
-      await goToNextScript();
+      if (resultText) setEventStoryText(resultText);
+      if (newsEventData) {
+        setNewsEventData(null);
+        await goToNextScript();
+      }
+    } catch (error) {
+      console.error("❌ 선택지 처리 실패:", error);
     }
   };
-
 
   return (
     <>
