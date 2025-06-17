@@ -1,6 +1,10 @@
 import getGameScript from "../data/GameScript";
 import axios from "axios";
 
+function getBackgroundImagePath(name) {
+  return name ? `/img/background_${name}.png` : "/img/background_home.png";
+}
+
 export async function handleEventType(
   type,
   setEventStoryText,
@@ -14,22 +18,22 @@ export async function handleEventType(
 ) {
   const gameScriptData = getGameScript(username);
 
-  const backgroundMap = {
-    1: "background_home.png",
-    2: "background_school.png",
-    3: "background_street.png",
-    4: "background_cafe.png",
-    5: "background_library.png",
-    6: "background_market.png",
+  const dayBackgroundMap = {
+    1: "home",
+    2: "outside",
+    3: "restaurant",
+    4: "cafe",
+    5: "weddinghall",
+    6: "warehouse",
   };
 
-  const background = backgroundMap[gameDay] || "background_default.png";
+  const backgroundName = dayBackgroundMap[gameDay] || "default";
 
   switch (type) {
     case 0: // 고정 이벤트
       console.log("📘 고정이벤트 발생");
       setIsEventActive(false);
-      setBackgroundImage(`/img/${background}`);
+      setBackgroundImage(getBackgroundImagePath(backgroundName));
 
       if (gameScriptData?.[`day${gameDay}`]?.length > 0) {
         setEventStoryText(gameScriptData[`day${gameDay}`][0]);
@@ -40,22 +44,51 @@ export async function handleEventType(
       break;
 
     case 1: // 일반 이벤트
-      console.log("💼 평상 이벤트 발생");
       setIsEventActive(true);
-      setBackgroundImage("/img/event_normal.png");
       try {
         const res = await axios.get("/api/dialogues/normal-events");
-        setEventStoryText(res.data.dialogue || "이벤트 대사 없음");
+        const eventData = res.data;
+
+        setEventStoryText(eventData.dialogue || "이벤트 대사 없음");
+        setBackgroundImage(
+          eventData.background
+            ? `/img/background_${eventData.background}.png`
+            : "/img/background_home.png"
+        );
+
+        // 선택지에 상태변화값도 넣어주기 (DB 컬럼명에 맞게 수정)
+        return [
+          {
+            text: eventData.choice1 || "선택지1",
+            stats: {
+              money: eventData.ch_stat1_money || 0,
+              health: eventData.ch_stat1_health || 0,
+              mental: eventData.ch_stat1_mental || 0,
+              reputation: eventData.ch_stat1_rep || 0,
+            },
+            result: eventData.result1 || "",
+          },
+          {
+            text: eventData.choice2 || "선택지2",
+            stats: {
+              money: eventData.ch_stat2_money || 0,
+              health: eventData.ch_stat2_health || 0,
+              mental: eventData.ch_stat2_mental || 0,
+              reputation: eventData.ch_stat2_rep || 0,
+            },
+            result: eventData.result2 || "",
+          },
+        ];
       } catch (err) {
-        console.error("평상 이벤트 데이터 가져오기 실패:", err);
         setEventStoryText("이벤트 로드 실패...");
+        setBackgroundImage("/img/background_home.png");
       }
       break;
 
     case 3: // 알바 이벤트
       console.log("🏥 알바 이벤트 발생");
       setIsEventActive(true);
-      setBackgroundImage(`/img/${background}`);
+      setBackgroundImage(getBackgroundImagePath("home"));
       setEventStoryText("오늘은 알바하는 날이다. 무슨 알바를 할까?");
       setCurrentScriptIndex(0);
 
@@ -70,7 +103,8 @@ export async function handleEventType(
             mental: c.chStatMental,
             rep: c.chStatRep,
           },
-          background: c.background,
+          background: getBackgroundImagePath(c.background),
+          id: c.id, // 선택지 고유 id도 같이 보관하면 좋음
         }));
 
         const getRandomChoices = (arr, num) => {
@@ -80,12 +114,12 @@ export async function handleEventType(
 
         const jobChoices = getRandomChoices(allChoices, 2);
         console.log("✅ 랜덤 선택지 2개:", jobChoices);
-        return jobChoices; // ✅ 여기서 return 후 끝
+        return jobChoices;
       } catch (error) {
         console.error("❌ 알바 선택지 불러오기 실패:", error);
         setEventStoryText("알바 선택지를 불러오는 데 실패했습니다.");
-        return [];
       }
+      break;
 
     case 4: // 뉴스 이벤트
       console.log("📰 뉴스 이벤트 발생");
@@ -94,7 +128,7 @@ export async function handleEventType(
 
       try {
         const response = await axios.get("/api/events/news", {
-          params: { username_id: username_id }, // ✅ 수정된 userId 전달
+          params: { username_id: username_id },
         });
 
         const news = response.data;
@@ -102,15 +136,15 @@ export async function handleEventType(
         if (news) {
           setEventStoryText(news.dialogue);
           setNewsEventData(news);
-          setBackgroundImage(`/img/${news.background}`);
+          setBackgroundImage(getBackgroundImagePath(news.background));
         } else {
           setEventStoryText("뉴스 이벤트를 불러올 수 없습니다.");
-          setBackgroundImage("/img/background_home.png");
+          setBackgroundImage(getBackgroundImagePath("home"));
         }
       } catch (error) {
         console.error("뉴스 이벤트 불러오기 실패:", error);
         setEventStoryText("뉴스 이벤트 로드 실패...");
-        setBackgroundImage("/img/background_home.png");
+        setBackgroundImage(getBackgroundImagePath("home"));
       }
       break;
 
