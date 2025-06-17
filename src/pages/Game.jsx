@@ -22,14 +22,31 @@ function Game() {
     mental: 0,
     reputation: 0,
   });
+  const [userId, setUserId] = useState(null); // ✅ 사용자 ID 상태 추가
   const [showNews, setShowNews] = useState(false);
   const [lastNewsOpenedDay, setLastNewsOpenedDay] = useState(-1);
   const [showMenu, setShowMenu] = useState(false);
 
+  // ✅ 사용자 ID 가져오기
   useEffect(() => {
     if (!username) return;
 
-    // 백엔드에서 유저 초기 상태 가져오기
+    const fetchUserId = async () => {
+      try {
+        const res = await axios.get(`/api/user/id?username=${username}`);
+        setUserId(res.data.userId); // 백엔드에서 { userId: ... } 반환
+      } catch (error) {
+        console.error("사용자 ID 가져오기 실패:", error);
+      }
+    };
+
+    fetchUserId();
+  }, [username]);
+
+  // ✅ 게임 초기 상태 가져오기
+  useEffect(() => {
+    if (!username) return;
+
     axios
       .get(`/api/init?username=${username}`)
       .then((res) => {
@@ -42,7 +59,7 @@ function Game() {
           reputation: data.ch_stat_rep,
         });
 
-        localStorage.setItem("username", username); // 새로고침 대비 저장
+        localStorage.setItem("username", username);
       })
       .catch((err) => {
         console.error("게임 데이터 초기화 실패:", err);
@@ -72,6 +89,7 @@ function Game() {
     <div className="main-container">
       <GameScreen
         username={username}
+        username_id={userId} // ✅ 여기서 전달
         gameDay={gameDay}
         onDayIncrement={updateDayAndStats}
       />
@@ -81,6 +99,7 @@ function Game() {
         toggleNews={toggleNews}
         lastNewsOpenedDay={lastNewsOpenedDay}
         username={username}
+        userId={userId}
       />
 
       <BottomStats stats={stats} />
