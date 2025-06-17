@@ -10,7 +10,7 @@ export async function handleEventType(
   username,
   setBackgroundImage,
   setNewsEventData,
-  username_id // ✅ 누락된 콤마 추가됨
+  username_id
 ) {
   const gameScriptData = getGameScript(username);
 
@@ -89,6 +89,7 @@ export async function handleEventType(
 
     case 4: // 뉴스 이벤트
       console.log("📰 뉴스 이벤트 발생");
+      console.log("userid:", username_id);
       setIsEventActive(true);
 
       try {

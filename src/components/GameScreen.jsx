@@ -21,7 +21,7 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
     const fetchUserId = async () => {
       try {
         const res = await axios.get(`/api/user/id?username=${username}`);
-        setUsernameId(res.data.userId); // 예: { userId: 123 }
+        setUsernameId(res.data.userId);
       } catch (error) {
         console.error("❌ 사용자 ID 불러오기 실패:", error);
       }
@@ -46,7 +46,7 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         username,
         setEventBackgroundImage,
         setNewsEventData,
-        16
+        usernameId
       );
 
       if (jobChoices && jobChoices.length > 0) {
@@ -110,7 +110,7 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
     }
   };
 
-  const onChoiceSelected = (index) => {
+  const onChoiceSelected = async (index) => {
     if (newsEventData) {
       const selected = index === 0 ? {
         money: newsEventData.ch_stat1_money,
@@ -124,31 +124,18 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         reputation: newsEventData.ch_stat2_rep,
       };
 
-      const resultText = index === 0 ? "선택 1을 골랐습니다!" : "선택 2를 골랐습니다!";
-      setEventStoryText(resultText);
+      // 1. 스탯 적용
+      await onDayIncrement(gameDay, selected);
 
-      onDayIncrement(gameDay, selected);
+      // 2. 상태 초기화
       setNewsEventData(null);
       setIsEventActive(false);
-      return;
+
+      // 3. 다음 날로 자동 이동
+      await goToNextScript();
     }
-
-    const choice = choices[index];
-    if (!choice) return;
-
-    setEventStoryText(choice.result);
-    setEventBackgroundImage(`/img/${choice.background || "background_home.png"}`);
-
-    onDayIncrement(gameDay, {
-      money: choice.stats.money,
-      health: choice.stats.health,
-      mental: choice.stats.mental,
-      reputation: choice.stats.rep,
-    });
-
-    setChoices([]);
-    setIsEventActive(false);
   };
+
 
   return (
     <>
@@ -175,7 +162,7 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
             : choices
         }
         onChoiceSelected={onChoiceSelected}
-        onNext={goToNextScript}
+        onNext={!newsEventData ? goToNextScript : null}
       />
     </>
   );
