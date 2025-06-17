@@ -2,38 +2,27 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/News.css';
 
-function NewsComponent({ onClose }) {
+function NewsComponent({ onClose, userId }) {
   const [newsList, setNewsList] = useState([]);
 
   useEffect(() => {
-    // 1) 먼저 랜덤 3개 뉴스 ID 저장 (필요시)
-    const saveRandomNewsIds = async () => {
-      try {
-        await axios.post('/api/news/random-ids', null, {
-          params: { gameProgressId: 1 },
-        });
-        console.log('랜덤 뉴스 3개 저장 완료');
-      } catch (error) {
-        console.error('뉴스 저장 실패:', error);
-      }
-    };
-
-    // 2) 저장된 뉴스 3개 모두 조회
+    // 저장된 뉴스 불러오기
     const fetchSavedNews = async () => {
+        console.log("NewsComponent userId:", userId);
       try {
         const response = await axios.get('/api/news/saved-news', {
-          params: { gameProgressId: 1 },
+          params: { gameProgressId: userId },
+          withCredentials: true,
         });
         setNewsList(response.data);
+        console.log("뉴스 응답 데이터:", response.data);
       } catch (error) {
         console.error('뉴스 불러오기 실패:', error);
       }
     };
 
-    // 저장하고 조회하기
-    saveRandomNewsIds().then(fetchSavedNews);
-
-  }, []);
+    fetchSavedNews();
+  }, [userId]);
 
   return (
     <div className="news-modal-overlay" onClick={onClose}>
@@ -44,7 +33,9 @@ function NewsComponent({ onClose }) {
             <p>뉴스가 없습니다.</p>
           ) : (
             newsList.map((newsItem, idx) => (
-              <p key={idx}>{newsItem.news /* 또는 newsItem.title 등 실제 필드명으로 변경 */}</p>
+              <p key={idx}>
+                {newsItem.news || newsItem.title || `뉴스 ${idx + 1}`}
+              </p>
             ))
           )}
         </div>

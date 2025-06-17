@@ -8,7 +8,9 @@ export async function handleEventType(
   setCurrentScriptIndex,
   gameDay,
   username,
-  setBackgroundImage
+  setBackgroundImage,
+  setNewsEventData,
+  username_id // ✅ 누락된 콤마 추가됨
 ) {
   const gameScriptData = getGameScript(username);
 
@@ -24,7 +26,7 @@ export async function handleEventType(
   const background = backgroundMap[gameDay] || "background_default.png";
 
   switch (type) {
-    case 0:
+    case 0: // 고정 이벤트
       console.log("📘 고정이벤트 발생");
       setIsEventActive(false);
       setBackgroundImage(`/img/${background}`);
@@ -37,7 +39,7 @@ export async function handleEventType(
       }
       break;
 
-    case 1:
+    case 1: // 일반 이벤트
       console.log("💼 평상 이벤트 발생");
       setIsEventActive(true);
       setBackgroundImage("/img/event_normal.png");
@@ -50,7 +52,7 @@ export async function handleEventType(
       }
       break;
 
-    case 3:
+    case 3: // 알바 이벤트
       console.log("🏥 알바 이벤트 발생");
       setIsEventActive(true);
       setBackgroundImage(`/img/${background}`);
@@ -78,28 +80,47 @@ export async function handleEventType(
 
         const jobChoices = getRandomChoices(allChoices, 2);
         console.log("✅ 랜덤 선택지 2개:", jobChoices);
-        return jobChoices;
+        return jobChoices; // ✅ 여기서 return 후 끝
       } catch (error) {
         console.error("❌ 알바 선택지 불러오기 실패:", error);
         setEventStoryText("알바 선택지를 불러오는 데 실패했습니다.");
         return [];
       }
 
-    case 4:
+    case 4: // 뉴스 이벤트
       console.log("📰 뉴스 이벤트 발생");
       setIsEventActive(true);
-      setBackgroundImage("/img/event_news.png");
-      setEventStoryText("뉴스 이벤트 발생");
+
+      try {
+        const response = await axios.get("/api/events/news", {
+          params: { username_id: username_id }, // ✅ 수정된 userId 전달
+        });
+
+        const news = response.data;
+
+        if (news) {
+          setEventStoryText(news.dialogue);
+          setNewsEventData(news);
+          setBackgroundImage(`/img/${news.background}`);
+        } else {
+          setEventStoryText("뉴스 이벤트를 불러올 수 없습니다.");
+          setBackgroundImage("/img/background_home.png");
+        }
+      } catch (error) {
+        console.error("뉴스 이벤트 불러오기 실패:", error);
+        setEventStoryText("뉴스 이벤트 로드 실패...");
+        setBackgroundImage("/img/background_home.png");
+      }
       break;
 
-    case 5:
+    case 5: // 주말 이벤트
       console.log("🎉 주말 이벤트 발생");
       setIsEventActive(true);
       setBackgroundImage("/img/event_weekend.png");
       setEventStoryText("즐거운 주말입니다!");
       break;
 
-    case 6:
+    case 6: // 엔딩
       console.log("🎬 엔딩 도달");
       setIsEventActive(true);
       setBackgroundImage("/img/event_ending.png");
@@ -113,4 +134,6 @@ export async function handleEventType(
       setEventStoryText("알 수 없는 이벤트 타입입니다.");
       break;
   }
+
+  return [];
 }

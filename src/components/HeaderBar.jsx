@@ -4,29 +4,39 @@ import "../styles/Game.css";
 import Date from "./Date";
 import MenuComponent from "./Menu";
 import MenuWindow from "./MenuWindow";
+import NewsComponent from "./News"; // 뉴스 모달
 import axios from "axios";
 
-function HeaderBar({ gameDay, toggleNews, lastNewsOpenedDay, username }) {
+function HeaderBar({ gameDay, lastNewsOpenedDay, username, userId }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 뉴스 버튼은 7일마다 한 번만 활성화
-  const isNewsButtonEnabled = gameDay % 7 === 1 && lastNewsOpenedDay !== gameDay;
+  // 뉴스 관련 상태
+  const [newsData, setNewsData] = useState(null);
+  const [showNews, setShowNews] = useState(false);
+  const [newsOpenedDay, setNewsOpenedDay] = useState(null); // 뉴스 연 날짜 기록
 
+  // 뉴스 버튼 활성 조건: 7일 주기 + 오늘 안 열었고 + 내부 상태도 오늘 안 열었어야 함
+  const isNewsButtonEnabled =
+    gameDay % 7 === 1 &&
+    lastNewsOpenedDay !== gameDay &&
+    newsOpenedDay !== gameDay;
+
+  // 뉴스 버튼 클릭 시 API 호출 + 모달 열기 + 오늘 날짜 저장
   const handleNewsClick = async () => {
-    if (!isNewsButtonEnabled || loading) return;
+    if (!isNewsButtonEnabled) return;
 
     setLoading(true);
     try {
-      // 기존 뉴스 삭제 + 새 뉴스 3개 저장 요청
-      await axios.post("/api/news/random-ids", null, {
-        params: { gameProgressId: 1 },
+      const response = await axios.get("/api/news/random-one", {
+        params: { gameProgressId: userId },
+        withCredentials: true,
       });
-
-      // 뉴스 모달 열기
-      toggleNews();
+      setNewsData(response.data);
+      setShowNews(true);
+      setNewsOpenedDay(gameDay);
     } catch (error) {
-      console.error("뉴스 저장 중 오류 발생:", error);
+      console.error("뉴스 불러오기 실패:", error);
     } finally {
       setLoading(false);
     }
@@ -38,6 +48,11 @@ function HeaderBar({ gameDay, toggleNews, lastNewsOpenedDay, username }) {
 
   const handleCloseMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleCloseNews = () => {
+    setShowNews(false);
+    setNewsData(null);
   };
 
   return (
@@ -64,6 +79,8 @@ function HeaderBar({ gameDay, toggleNews, lastNewsOpenedDay, username }) {
       {isMenuOpen && (
         <MenuWindow onClose={handleCloseMenu} username={username} />
       )}
+
+      {showNews && <NewsComponent userId={userId} onClose={handleCloseNews} />}
     </div>
   );
 }

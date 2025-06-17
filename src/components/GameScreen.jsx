@@ -6,17 +6,33 @@ import "../styles/GameScreen.css";
 import ChoiceButtons from "./ChoiceButtons";
 
 function GameScreen({ username, gameDay, onDayIncrement }) {
+  const [usernameId, setUsernameId] = useState(null); // ✅ username_id 저장용
   const [gameScript, setGameScript] = useState({});
   const [currentScriptIndex, setCurrentScriptIndex] = useState(0);
   const [eventStoryText, setEventStoryText] = useState("");
   const [isEventActive, setIsEventActive] = useState(false);
   const [choices, setChoices] = useState([]);
+  const [newsEventData, setNewsEventData] = useState(null);
+  const [backgroundImage] = useState("/img/background_gameUi.png");
+  const [eventBackgroundImage, setEventBackgroundImage] = useState(null);
 
-  const [backgroundImage] = useState("/img/background_gameUi.png"); // 항상 보이는 UI 배경
-  const [eventBackgroundImage, setEventBackgroundImage] = useState(null); // 상황에 따라 보이는 배경
-
+  // ✅ 사용자 ID 불러오기
   useEffect(() => {
-    if (!username || gameDay === 0) return;
+    const fetchUserId = async () => {
+      try {
+        const res = await axios.get(`/api/user/id?username=${username}`);
+        setUsernameId(res.data.userId); // 예: { userId: 123 }
+      } catch (error) {
+        console.error("❌ 사용자 ID 불러오기 실패:", error);
+      }
+    };
+
+    if (username) fetchUserId();
+  }, [username]);
+
+  // ✅ 이벤트 초기화
+  useEffect(() => {
+    if (!username || !usernameId || gameDay === 0) return;
 
     const initEvent = async () => {
       const type = await fetchEventType();
@@ -28,7 +44,9 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         setCurrentScriptIndex,
         gameDay,
         username,
-        setEventBackgroundImage
+        setEventBackgroundImage,
+        setNewsEventData,
+        16
       );
 
       if (jobChoices && jobChoices.length > 0) {
@@ -39,7 +57,7 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
     };
 
     initEvent();
-  }, [username, gameDay]);
+  }, [username, usernameId, gameDay]);
 
   const fetchEventType = async () => {
     try {
@@ -84,7 +102,8 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         setEventStoryText(getGameScript(username)[`day${data.current_day}`]?.[0] || "");
         setIsEventActive(false);
         setChoices([]);
-        setEventBackgroundImage(null); // 다음날로 넘어가면 이벤트 배경 제거
+        setNewsEventData(null);
+        setEventBackgroundImage(null);
       } catch (error) {
         console.error("❌ Day 증가 실패:", error);
       }
@@ -92,15 +111,34 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
   };
 
   const onChoiceSelected = (index) => {
+    if (newsEventData) {
+      const selected = index === 0 ? {
+        money: newsEventData.ch_stat1_money,
+        health: newsEventData.ch_stat1_health,
+        mental: newsEventData.ch_stat1_mental,
+        reputation: newsEventData.ch_stat1_rep,
+      } : {
+        money: newsEventData.ch_stat2_money,
+        health: newsEventData.ch_stat2_health,
+        mental: newsEventData.ch_stat2_mental,
+        reputation: newsEventData.ch_stat2_rep,
+      };
+
+      const resultText = index === 0 ? "선택 1을 골랐습니다!" : "선택 2를 골랐습니다!";
+      setEventStoryText(resultText);
+
+      onDayIncrement(gameDay, selected);
+      setNewsEventData(null);
+      setIsEventActive(false);
+      return;
+    }
+
     const choice = choices[index];
     if (!choice) return;
 
     setEventStoryText(choice.result);
-
-    // 이벤트 배경 변경
     setEventBackgroundImage(`/img/${choice.background || "background_home.png"}`);
 
-    // 스탯 반영
     onDayIncrement(gameDay, {
       money: choice.stats.money,
       health: choice.stats.health,
@@ -115,10 +153,7 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
   return (
     <>
       <div className="main-container">
-        {/* 항상 보이는 회색 UI 배경 */}
         <img className="background-img" src={backgroundImage} alt="기본 UI 배경" />
-
-        {/* 상황에 따라 보이는 장소 배경 */}
         {eventBackgroundImage && (
           <img className="background-home" src={eventBackgroundImage} alt="이벤트 배경" />
         )}
@@ -130,9 +165,15 @@ function GameScreen({ username, gameDay, onDayIncrement }) {
         </div>
       </div>
 
-      {/* 선택지 버튼 렌더링 */}
       <ChoiceButtons
-        choices={choices}
+        choices={
+          newsEventData
+            ? [
+                { text: newsEventData.choice1 },
+                { text: newsEventData.choice2 },
+              ]
+            : choices
+        }
         onChoiceSelected={onChoiceSelected}
         onNext={goToNextScript}
       />
