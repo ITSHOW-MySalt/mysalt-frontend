@@ -101,10 +101,10 @@ export async function handleEventType(
             money: c.chStatMoney,
             health: c.chStatHealth,
             mental: c.chStatMental,
-            reputation: c.chStatRep,
+            reputation: c.chStatRep,  // ✅ rep → reputation
           },
           background: getBackgroundImagePath(c.background),
-          id: c.id, // 선택지 고유 id도 같이 보관하면 좋음
+          id: c.id,
         }));
 
         const getRandomChoices = (arr, num) => {

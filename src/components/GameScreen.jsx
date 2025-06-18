@@ -77,29 +77,56 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
     const currentDayScript = gameScript[dayKey];
     const nextIndex = currentScriptIndex + 1;
 
-    if (currentDayScript && nextIndex < currentDayScript.length) {
-      setCurrentScriptIndex(nextIndex);
-      setEventStoryText(currentDayScript[nextIndex]);
+    if (!isEventActive) {
+      if (currentDayScript && nextIndex < currentDayScript.length) {
+        setCurrentScriptIndex(nextIndex);
+        setEventStoryText("");
+      } else {
+        try {
+          await axios.post("/api/next-day", { username });
+
+          // 서버에서 최신 상태 받아오기
+          const res = await axios.get(`/api/init?username=${username}`);
+          const data = res.data;
+
+          // 서버에서 받은 상태로 갱신
+          await onDayIncrement(data.current_day, {
+            money: data.ch_stat_money - currentStats.money,
+            health: data.ch_stat_health - currentStats.health,
+            mental: data.ch_stat_mental - currentStats.mental,
+            reputation: data.ch_stat_rep - currentStats.reputation,
+          });
+
+          setCurrentScriptIndex(0);
+          setEventStoryText("");
+          setIsEventActive(false);
+          setChoices([]);
+          setNewsEventData(null);
+          setEventBackgroundImage(null);
+        } catch (error) {
+          console.error("❌ Day 증가 실패:", error);
+        }
+      }
     } else {
+      // 이벤트 활성 상태일 때도 동일하게 처리
       try {
         await axios.post("/api/next-day", { username });
 
         const res = await axios.get(`/api/init?username=${username}`);
         const data = res.data;
 
-        const delta = {
-          money: 0,
-          health: 0,
-          mental: 0,
-          reputation: 0,
-        };
-
-        await onDayIncrement(data.current_day, delta); // 변화 없음
+        await onDayIncrement(data.current_day, {
+          money: data.ch_stat_money - currentStats.money,
+          health: data.ch_stat_health - currentStats.health,
+          mental: data.ch_stat_mental - currentStats.mental,
+          reputation: data.ch_stat_rep - currentStats.reputation,
+        });
 
         setCurrentScriptIndex(0);
         setEventStoryText(
           getGameScript(username)[`day${data.current_day}`]?.[0] || ""
         );
+        setEventStoryText("");
         setIsEventActive(false);
         setChoices([]);
         setNewsEventData(null);
@@ -111,14 +138,15 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
     }
   };
 
+
   const onChoiceSelected = async (index) => {
     try {
       let selectedStats = null;
       let resultText = "";
 
-      if (newsEventData) {
-        selectedStats =
-          index === 0
+      if (newsEventData || (choices.length > 0 && isEventActive)) {
+        if (newsEventData) {
+          selectedStats = index === 0
             ? {
                 money: newsEventData.ch_stat1_money || 0,
                 health: newsEventData.ch_stat1_health || 0,
@@ -131,9 +159,40 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
                 mental: newsEventData.ch_stat2_mental || 0,
                 reputation: newsEventData.ch_stat2_rep || 0,
               };
-        resultText =
-          index === 0 ? newsEventData.result1 : newsEventData.result2;
-      } else if (choices.length > 0) {
+        } else {
+          selectedStats = choices[index]?.stats || {
+            money: 0,
+            health: 0,
+            mental: 0,
+            reputation: 0,
+          };
+        }
+
+        await axios.post("/api/update-progress", {
+          username,
+          ch_stat_money: currentStats.money + selectedStats.money,
+          ch_stat_health: currentStats.health + selectedStats.health,
+          ch_stat_mental: currentStats.mental + selectedStats.mental,
+          ch_stat_rep: currentStats.reputation + selectedStats.reputation,
+        });
+
+        // 서버에서 최신 상태 받아오기
+        const res = await axios.get(`/api/init?username=${username}`);
+        const data = res.data;
+
+        await onDayIncrement(data.current_day, {
+          money: data.ch_stat_money - currentStats.money,
+          health: data.ch_stat_health - currentStats.health,
+          mental: data.ch_stat_mental - currentStats.mental,
+          reputation: data.ch_stat_rep - currentStats.reputation,
+        });
+
+        await goToNextScript();
+        return;
+      }
+
+      // 알바 등 이벤트 (선택지 누른 후 결과 보여주고 isEventActive 끄기)
+      if (choices.length > 0) {
         const selectedChoice = choices[index];
 
         selectedStats = selectedChoice?.stats || {
@@ -143,15 +202,11 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
           reputation: 0,
         };
 
-        resultText = selectedChoice?.result || "";
+        setEventStoryText(selectedChoice?.result || "");
+        setIsEventActive(false);
+        setChoices([]);
+        setEventBackgroundImage(selectedChoice.background || null);
 
-        // ✅ 여기 추가: 배경 이미지 반영
-        if (selectedChoice?.background) {
-          setEventBackgroundImage(selectedChoice.background);
-        }
-      }
-
-      if (selectedStats) {
         await axios.post("/api/update-progress", {
           username,
           ch_stat_money: currentStats.money + selectedStats.money,
@@ -160,15 +215,16 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
           ch_stat_rep: currentStats.reputation + selectedStats.reputation,
         });
 
-        await onDayIncrement(gameDay, selectedStats);
-      }
+        // 서버에서 최신 상태 받아오기
+        const res = await axios.get(`/api/init?username=${username}`);
+        const data = res.data;
 
-      setChoices([]);
-      setIsEventActive(false);
-      if (resultText) setEventStoryText(resultText);
-      if (newsEventData) {
-        setNewsEventData(null);
-        await goToNextScript();
+        await onDayIncrement(data.current_day, {
+          money: data.ch_stat_money - currentStats.money,
+          health: data.ch_stat_health - currentStats.health,
+          mental: data.ch_stat_mental - currentStats.mental,
+          reputation: data.ch_stat_rep - currentStats.reputation,
+        });
       }
     } catch (error) {
       console.error("❌ 선택지 처리 실패:", error);
@@ -206,45 +262,59 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
           />
         )}
 
-        <div className="game-overlay">
-          <div className="game-story-text">
-            <p>{eventStoryText}</p>
+          <div className="game-overlay">
+            <div className="game-story-text">
+              {isEventActive ? (
+                <p>{eventStoryText}</p>
+              ) : (
+                gameScript[`day${gameDay}`] &&
+                gameScript[`day${gameDay}`][currentScriptIndex] && (
+                  <>
+                    {gameScript[`day${gameDay}`][currentScriptIndex].speaker && (
+                      <p className="speaker">
+                        {gameScript[`day${gameDay}`][currentScriptIndex].speaker}
+                      </p>
+                    )}
+                    <p>{gameScript[`day${gameDay}`][currentScriptIndex].text}</p>
+                  </>
+                )
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <ChoiceButtons
-        choices={
-          newsEventData
-            ? [
-                {
-                  text: newsEventData.choice1,
-                  stats: {
-                    money: newsEventData.ch_stat1_money || 0,
-                    health: newsEventData.ch_stat1_health || 0,
-                    mental: newsEventData.ch_stat1_mental || 0,
-                    reputation: newsEventData.ch_stat1_rep || 0,
+        <ChoiceButtons
+          choices={
+            newsEventData
+              ? [
+                  {
+                    text: newsEventData.choice1,
+                    stats: {
+                      money: newsEventData.ch_stat1_money || 0,
+                      health: newsEventData.ch_stat1_health || 0,
+                      mental: newsEventData.ch_stat1_mental || 0,
+                      reputation: newsEventData.ch_stat1_rep || 0,
+                    },
+                    result: newsEventData.result1 || "",
                   },
-                  result: newsEventData.result1 || "",
-                },
-                {
-                  text: newsEventData.choice2,
-                  stats: {
-                    money: newsEventData.ch_stat2_money || 0,
-                    health: newsEventData.ch_stat2_health || 0,
-                    mental: newsEventData.ch_stat2_mental || 0,
-                    reputation: newsEventData.ch_stat2_rep || 0,
+                  {
+                    text: newsEventData.choice2,
+                    stats: {
+                      money: newsEventData.ch_stat2_money || 0,
+                      health: newsEventData.ch_stat2_health || 0,
+                      mental: newsEventData.ch_stat2_mental || 0,
+                      reputation: newsEventData.ch_stat2_rep || 0,
+                    },
+                    result: newsEventData.result2 || "",
                   },
-                  result: newsEventData.result2 || "",
-                },
-              ]
-            : choices
-        }
-        onChoiceSelected={onChoiceSelected}
-        onNext={!newsEventData ? goToNextScript : null}
-      />
-    </>
-  );
-}
+                ]
+              : choices
+          }
+          onChoiceSelected={onChoiceSelected}
+          onNext={!newsEventData ? goToNextScript : null}
+        />
+      </>
+    );
+  }
 
 export default GameScreen;
