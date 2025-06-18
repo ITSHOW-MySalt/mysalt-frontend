@@ -25,7 +25,7 @@
   justify-content: space-around;
   background-color: #3C454F;
   padding: 10px 0;
-  z-index: 10;
+  z-index: 900;
   box-sizing: border-box;
 }
 

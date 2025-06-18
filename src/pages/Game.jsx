@@ -1,13 +1,12 @@
-// Game.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 
 import HeaderBar from "../components/HeaderBar";
-import BottomStats from "../components/BottomStats";
-import News from "../components/News";
+import BottomStats from "../components/BottomStats"; // 스탯창 컴포넌트
+import NewsComponent from "../components/News"; // NewsComponent로 이름 변경
 import GameScreen from "../components/GameScreen";
-import MenuWindow from "../components/MenuWindow";
+import MenuWindow from "../components/MenuWindow"; // MenuWindow import 유지
 
 import "../styles/Base.css";
 import "../styles/Game.css";
@@ -24,9 +23,9 @@ function Game() {
     reputation: 0,
   });
   const [userId, setUserId] = useState(null);
-  const [showNews, setShowNews] = useState(false);
+  const [showNews, setShowNews] = useState(false); // 뉴스창 열림/닫힘 상태
   const [lastNewsOpenedDay, setLastNewsOpenedDay] = useState(-1);
-  const [showMenu, setShowMenu] = useState(false);
+  const [showMenu, setShowMenu] = useState(false); // 메뉴창 열림/닫힘 상태 유지
 
   // 사용자 ID 가져오기
   useEffect(() => {
@@ -67,7 +66,7 @@ function Game() {
       });
   }, [username]);
 
-  // ✅ 변화량으로 스탯 갱신
+  // 변화량으로 스탯 갱신
   const updateDayAndStats = (newDay, statDelta) => {
     setGameDay(newDay);
     setStats((prev) => ({
@@ -78,11 +77,16 @@ function Game() {
     }));
   };
 
+  // 뉴스창 상태 토글만 수행
   const toggleNews = () => {
-    setShowNews(!showNews);
-    if (!showNews) setLastNewsOpenedDay(gameDay);
+    setShowNews(!showNews); // 뉴스창 상태 토글
+    // 뉴스창을 열 때만 날짜 기록 (HeaderBar에서 사용)
+    if (!showNews) {
+        setLastNewsOpenedDay(gameDay);
+    }
   };
 
+  // 메뉴창 상태 토글 함수
   const toggleMenu = () => {
     setShowMenu(!showMenu);
   };
@@ -99,14 +103,18 @@ function Game() {
 
       <HeaderBar
         gameDay={gameDay}
-        toggleNews={toggleNews}
-        lastNewsOpenedDay={lastNewsOpenedDay}
-        username={username}
-        userId={userId}
+        toggleNews={toggleNews} // Game.jsx의 toggleNews 함수를 HeaderBar로 전달
+        toggleMenu={toggleMenu}
+        lastNewsOpenedDay={lastNewsOpenedDay} // HeaderBar에서 뉴스 버튼 활성화/비활성화에 사용
+        username={username} // HeaderBar에서 뉴스 저장 API 호출에 사용
+        userId={userId} 
       />
 
-      <BottomStats stats={stats} />
-      {showNews && <News onClose={toggleNews} />}
+      {/* showNews 상태에 따라 뉴스창 또는 스탯창 렌더링 */}
+      {showNews && <NewsComponent onClose={toggleNews} userId={userId} />}
+      {!showNews && <BottomStats stats={stats} />}
+
+      {/* showMenu 상태에 따라 메뉴창 렌더링 */}
       {showMenu && <MenuWindow onClose={toggleMenu} username={username} />}
     </div>
   );
