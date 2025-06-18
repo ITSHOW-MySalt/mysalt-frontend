@@ -3,7 +3,7 @@ import "../styles/ChoiceButtons.css";
 
 function ChoiceButtons({ choices, onChoiceSelected, onNext }) {
   if (!choices || choices.length === 0) {
-    // 선택지 없을 때 중앙 '다음' 버튼
+    // 선택지가 없을 때 '다음' 버튼 중앙에 표시
     return (
       <div className="choice-buttons-center">
         <button onClick={onNext}>다음</button>
@@ -12,15 +12,17 @@ function ChoiceButtons({ choices, onChoiceSelected, onNext }) {
   }
 
   if (choices.length === 1) {
-    // 선택지 1개일 때도 버튼 하나만 중앙에 (선택지 텍스트 사용)
+    // 선택지 1개일 경우 버튼 하나 중앙에
     return (
       <div className="choice-buttons-center">
-        <button onClick={() => onChoiceSelected(0)}>{choices[0].text}</button>
+        <button onClick={() => onChoiceSelected(0)}>
+          {choices[0].text}
+        </button>
       </div>
     );
   }
 
-  // 선택지 2개 이상일 때 기존 다중 버튼 노출
+  // 선택지 2개 이상일 경우 좌우 배치
   return (
     <div className="game-choices">
       {choices.map((choice, idx) => (
