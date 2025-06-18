@@ -16,6 +16,7 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
   const [newsEventData, setNewsEventData] = useState(null);
   const [backgroundImage] = useState("/img/background_gameUi.png");
   const [eventBackgroundImage, setEventBackgroundImage] = useState(null);
+  const [isEnding, setIsEnding] = useState(false);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -96,11 +97,14 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
         await onDayIncrement(data.current_day, delta); // 변화 없음
 
         setCurrentScriptIndex(0);
-        setEventStoryText(getGameScript(username)[`day${data.current_day}`]?.[0] || "");
+        setEventStoryText(
+          getGameScript(username)[`day${data.current_day}`]?.[0] || ""
+        );
         setIsEventActive(false);
         setChoices([]);
         setNewsEventData(null);
         setEventBackgroundImage(null);
+        await checkEnding();
       } catch (error) {
         console.error("❌ Day 증가 실패:", error);
       }
@@ -113,21 +117,22 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
       let resultText = "";
 
       if (newsEventData) {
-        selectedStats = index === 0
-          ? {
-              money: newsEventData.ch_stat1_money || 0,
-              health: newsEventData.ch_stat1_health || 0,
-              mental: newsEventData.ch_stat1_mental || 0,
-              reputation: newsEventData.ch_stat1_rep || 0,
-            }
-          : {
-              money: newsEventData.ch_stat2_money || 0,
-              health: newsEventData.ch_stat2_health || 0,
-              mental: newsEventData.ch_stat2_mental || 0,
-              reputation: newsEventData.ch_stat2_rep || 0,
-            };
-        resultText = index === 0 ? newsEventData.result1 : newsEventData.result2;
-
+        selectedStats =
+          index === 0
+            ? {
+                money: newsEventData.ch_stat1_money || 0,
+                health: newsEventData.ch_stat1_health || 0,
+                mental: newsEventData.ch_stat1_mental || 0,
+                reputation: newsEventData.ch_stat1_rep || 0,
+              }
+            : {
+                money: newsEventData.ch_stat2_money || 0,
+                health: newsEventData.ch_stat2_health || 0,
+                mental: newsEventData.ch_stat2_mental || 0,
+                reputation: newsEventData.ch_stat2_rep || 0,
+              };
+        resultText =
+          index === 0 ? newsEventData.result1 : newsEventData.result2;
       } else if (choices.length > 0) {
         const selectedChoice = choices[index];
 
@@ -169,13 +174,36 @@ function GameScreen({ username, gameDay, onDayIncrement, currentStats }) {
       console.error("❌ 선택지 처리 실패:", error);
     }
   };
+  const checkEnding = async () => {
+    try {
+      const res = await axios.get("/api/check-ending", {
+        params: { username: username },
+      });
+
+      if (res.data && res.data.ending && res.data.imglink) {
+        setIsEnding(true); // 🆕 엔딩 상태 true
+        setEventStoryText(res.data.ending); // 텍스트 = 엔딩 이름
+        setEventBackgroundImage(`/img/${res.data.imglink}`); // 배경 = 엔딩 이미지
+      }
+    } catch (error) {
+      console.error("❌ 엔딩 체크 실패:", error);
+    }
+  };
 
   return (
     <>
       <div className="main-container">
-        <img className="background-img" src={backgroundImage} alt="기본 UI 배경" />
+        <img
+          className="background-img"
+          src={backgroundImage}
+          alt="기본 UI 배경"
+        />
         {eventBackgroundImage && (
-          <img className="background-home" src={eventBackgroundImage} alt="이벤트 배경" />
+          <img
+            className="background-home"
+            src={eventBackgroundImage}
+            alt="이벤트 배경"
+          />
         )}
 
         <div className="game-overlay">
