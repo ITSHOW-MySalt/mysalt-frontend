@@ -101,7 +101,7 @@ export async function handleEventType(
             money: c.chStatMoney,
             health: c.chStatHealth,
             mental: c.chStatMental,
-            rep: c.chStatRep,
+            reputation: c.chStatRep,
           },
           background: getBackgroundImagePath(c.background),
           id: c.id, // 선택지 고유 id도 같이 보관하면 좋음
