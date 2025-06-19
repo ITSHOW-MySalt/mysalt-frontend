@@ -16,13 +16,38 @@ export async function handleEventType(
   setNewsEventData,
   username_id,
   endingName = null,
-  endingImage = null
+  endingImage = null,
+  navigate // ✅ 컴포넌트에서 전달받음
 ) {
-  // gameDay가 21이면 생존 메시지 띄우고 초기화 안내 (클라이언트에서 gameDay 초기화 필요)
+  // ✅ 21일차일 경우: 생존 메시지 출력 후 자동 초기화 및 메인 이동
   if (gameDay === 21) {
     setIsEventActive(true);
     setEventStoryText("당신은 생존하였습니다!");
     setBackgroundImage("/img/survive.png");
+
+    setTimeout(async () => {
+      try {
+        const response = await axios.post("/api/reset-progress", {
+          username: username,
+        });
+
+        if (response.status === 200) {
+          alert("게임이 종료되었습니다. 진행도가 초기화됩니다.");
+          navigate("/", { state: { username } });
+        } else {
+          alert("진행도 초기화에 실패했습니다.");
+        }
+      } catch (error) {
+        console.error("에러 발생:", error);
+        alert("서버 오류가 발생했습니다.");
+      }
+    }, 3000); // 3초 후 자동 이동
+
+    return [];
+  }
+
+  // ✅ 21일차 이후는 아예 도달하지 않도록 막기 위해 제거하거나 남겨도 무방 (안전장치)
+  if (gameDay > 21) {
     return [];
   }
 

@@ -2,8 +2,8 @@ import React from "react";
 import "../styles/ChoiceButtons.css";
 
 function ChoiceButtons({ choices, onChoiceSelected, onNext }) {
-  if (!choices || choices.length === 0) {
-    // 선택지가 없을 때 '다음' 버튼 중앙에 표시
+  // ✅ onNext가 없을 경우 버튼 자체를 안 보여줌
+  if ((!choices || choices.length === 0) && onNext) {
     return (
       <div className="choice-buttons-center">
         <button onClick={onNext}>다음</button>
@@ -11,8 +11,7 @@ function ChoiceButtons({ choices, onChoiceSelected, onNext }) {
     );
   }
 
-  if (choices.length === 1) {
-    // 선택지 1개일 경우 버튼 하나 중앙에
+  if (choices && choices.length === 1) {
     return (
       <div className="choice-buttons-center">
         <button onClick={() => onChoiceSelected(0)}>
@@ -22,20 +21,23 @@ function ChoiceButtons({ choices, onChoiceSelected, onNext }) {
     );
   }
 
-  // 선택지 2개 이상일 경우 좌우 배치
-  return (
-    <div className="game-choices">
-      {choices.map((choice, idx) => (
-        <button
-          key={idx}
-          className="choice-button"
-          onClick={() => onChoiceSelected(idx)}
-        >
-          {choice.text}
-        </button>
-      ))}
-    </div>
-  );
+  if (choices && choices.length >= 2) {
+    return (
+      <div className="game-choices">
+        {choices.map((choice, idx) => (
+          <button
+            key={idx}
+            className="choice-button"
+            onClick={() => onChoiceSelected(idx)}
+          >
+            {choice.text}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return null; // ✅ 아무것도 없을 경우 아무것도 렌더링하지 않음
 }
 
 export default ChoiceButtons;
