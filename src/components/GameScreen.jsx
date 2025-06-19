@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // ✅ 추가
+
 import { handleEventType } from "../utils/GameEvents";
 import getGameScript from "../data/GameScript";
 import "../styles/GameScreen.css";
@@ -26,6 +28,7 @@ function GameScreen({
   newsEventData,
   setNewsEventData,
 }) {
+  const navigate = useNavigate(); // ✅ 추가
   const [usernameId, setUsernameId] = useState(null);
   const [gameScript, setGameScript] = useState({});
   const [choices, setChoices] = useState([]);
@@ -68,7 +71,10 @@ function GameScreen({
         username,
         setEventBackgroundImage,
         setNewsEventData,
-        usernameId
+        usernameId,
+        null,
+        null,
+        navigate // ✅ navigate 전달!
       );
 
       setChoices(jobChoices && jobChoices.length > 0 ? jobChoices : []);
@@ -80,15 +86,11 @@ function GameScreen({
   const goToNextScript = async () => {
     try {
       if (isEnding) {
-        // 진행도 초기화 요청
         const res = await axios.post("/api/reset-progress", { username });
         if (res.status === 200) {
           alert("진행도가 초기화되고 로그아웃 됩니다.");
-
-          // 클라이언트 측 로그아웃 처리
           localStorage.removeItem("username");
 
-          // 상태 초기화
           setGameDay(1);
           setIsEnding(false);
           setEventStoryText("");
@@ -97,7 +99,6 @@ function GameScreen({
           setChoices([]);
           setNewsEventData(null);
 
-          // 페이지 강제 이동 (루트 페이지)
           window.location.href = "/";
           return;
         } else {
@@ -117,12 +118,9 @@ function GameScreen({
         } else {
           try {
             await axios.post("/api/next-day", { username });
-
-            // 서버에서 최신 상태 받아오기
             const res = await axios.get(`/api/init?username=${username}`);
             const data = res.data;
 
-            // 서버에서 받은 상태로 갱신
             await onDayIncrement(data.current_day, {
               money: data.ch_stat_money - currentStats.money,
               health: data.ch_stat_health - currentStats.health,
@@ -141,10 +139,8 @@ function GameScreen({
           }
         }
       } else {
-        // 이벤트 활성 상태일 때도 동일하게 처리
         try {
           await axios.post("/api/next-day", { username });
-
           const res = await axios.get(`/api/init?username=${username}`);
           const data = res.data;
 
@@ -214,7 +210,6 @@ function GameScreen({
           ch_stat_rep: currentStats.reputation + selectedStats.reputation,
         });
 
-        // 서버에서 최신 상태 받아오기
         const res = await axios.get(`/api/init?username=${username}`);
         const data = res.data;
 
@@ -229,7 +224,6 @@ function GameScreen({
         return;
       }
 
-      // 알바 등 이벤트 (선택지 누른 후 결과 보여주고 isEventActive 끄기)
       if (choices.length > 0) {
         const selectedChoice = choices[index];
 
@@ -253,7 +247,6 @@ function GameScreen({
           ch_stat_rep: currentStats.reputation + selectedStats.reputation,
         });
 
-        // 서버에서 최신 상태 받아오기
         const res = await axios.get(`/api/init?username=${username}`);
         const data = res.data;
 
@@ -287,9 +280,7 @@ function GameScreen({
 
         <div className="game-overlay">
           <div className="game-story-text">
-            {isEventActive ? (
-              <p>{eventStoryText}</p>
-            ) : isEnding ? (
+            {isEventActive || isEnding ? (
               <p>{eventStoryText}</p>
             ) : (
               gameScript[`day${gameDay}`] &&
@@ -335,8 +326,17 @@ function GameScreen({
               ]
             : choices
         }
+
+        // ✅ 수정된 조건 → 불필요한 "다음" 버튼 안 뜨게
+        onNext={
+          !newsEventData &&
+          choices.length === 0 &&
+          gameScript[`day${gameDay}`] &&
+          currentScriptIndex < gameScript[`day${gameDay}`].length
+            ? goToNextScript
+            : null
+        }
         onChoiceSelected={onChoiceSelected}
-        onNext={!newsEventData ? goToNextScript : null}
       />
     </>
   );
