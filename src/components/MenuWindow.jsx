@@ -45,7 +45,7 @@ function MenuWindow({ onClose, username }) {
 
       <div className="menu-window">
         <button className="menu-item" onClick={goToEncyclopedia}>도감</button>
-        <button className="menu-item" onClick={() => alert("설정 클릭")}>설정</button>
+{/*         <button className="menu-item" onClick={() => alert("설정 클릭")}>설정</button> */}
         <button className="menu-item" onClick={handleResetProgress}>진행도 리셋</button>
         <button className="menu-item" onClick={handleLogout}>로그아웃</button>
       </div>
