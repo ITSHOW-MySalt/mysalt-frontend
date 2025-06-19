@@ -15,7 +15,7 @@
   left: 50%;
   transform: translateX(-50%);
   width: auto;           /* 너비 자동 조정 */
-  height: 45vh;          /* 화면 높이에 맞춰 조정 */
+  height: 47vh;          /* 화면 높이에 맞춰 조정 */
   max-height: 80vh;      /* 너무 커지지 않게 제한 */
   z-index: 0;            /* 회색 배경보다 뒤에 */
   object-fit: contain;   /* 이미지 비율 유지하며 내부에 맞춤 */
@@ -40,4 +40,16 @@
 .news-icon {
   width: 32px;
   height: 32px;
+}
+
+.character-img {
+  position: absolute;
+    top: 10vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;           /* 너비 자동 조정 */
+    height: 47vh;          /* 화면 높이에 맞춰 조정 */
+    max-height: 80vh;      /* 너무 커지지 않게 제한 */
+    z-index: 1;            /* 회색 배경보다 뒤에 */
+    object-fit: contain;   /* 이미지 비율 유지하며 내부에 맞춤 */
 }

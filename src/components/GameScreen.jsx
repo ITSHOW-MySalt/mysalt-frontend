@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // ✅ 추가
+import { useNavigate } from "react-router-dom";
 
 import { handleEventType } from "../utils/GameEvents";
 import getGameScript from "../data/GameScript";
@@ -20,18 +20,21 @@ function GameScreen({
   setIsEnding,
   setEventStoryText,
   setEventBackgroundImage,
-  checkEnding,
   isEventActive,
   setIsEventActive,
   currentScriptIndex,
   setCurrentScriptIndex,
   newsEventData,
   setNewsEventData,
+  gender
 }) {
-  const navigate = useNavigate(); // ✅ 추가
+  const navigate = useNavigate();
   const [usernameId, setUsernameId] = useState(null);
   const [gameScript, setGameScript] = useState({});
   const [choices, setChoices] = useState([]);
+  const [eventType, setEventType] = useState(null);
+  const [isJobResultVisible, setIsJobResultVisible] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (username_id) {
@@ -41,10 +44,10 @@ function GameScreen({
 
   useEffect(() => {
     if (username) {
-      const script = getGameScript(username);
+      const script = getGameScript(username, gender);  // gender 추가
       setGameScript(script);
     }
-  }, [username]);
+  }, [username, gender]);
 
   const fetchEventType = async () => {
     try {
@@ -57,53 +60,139 @@ function GameScreen({
   };
 
   useEffect(() => {
-    if (!username || !usernameId || gameDay === 0) return;
+    const shouldInit = !!username && !!usernameId && !!gameDay && gameDay > 0;
+
+    if (!shouldInit) return;
 
     const initEvent = async () => {
-      const type = await fetchEventType();
+      try {
+        const res = await axios.get("/api/init?username=" + username);
+        const initData = res.data;
 
-      const jobChoices = await handleEventType(
-        type,
-        setEventStoryText,
-        setIsEventActive,
-        setCurrentScriptIndex,
-        gameDay,
-        username,
-        setEventBackgroundImage,
-        setNewsEventData,
-        usernameId,
-        null,
-        null,
-        navigate // ✅ navigate 전달!
-      );
+        if (initData.ending_list === 1) {
+          const endingRes = await axios.get("/api/check-ending", {
+            params: { username },
+          });
 
-      setChoices(jobChoices && jobChoices.length > 0 ? jobChoices : []);
+          if (endingRes.data?.ending && endingRes.data?.imglink) {
+            const imgPath = `/img/${endingRes.data.imglink}`;
+
+            setIsEnding(true);
+            setEventStoryText(endingRes.data.ending);
+            setEventBackgroundImage(imgPath);
+
+            const resultChoices = await handleEventType(
+              7,
+              setEventStoryText,
+              setIsEventActive,
+              setCurrentScriptIndex,
+              gameDay,
+              username,
+              setEventBackgroundImage,
+              setNewsEventData,
+              usernameId,
+              endingRes.data.ending,
+              imgPath,
+              navigate,
+              gender
+            );
+
+            setChoices(resultChoices || []);
+            return;
+          }
+        }
+
+        const type = await fetchEventType();
+        setEventType(type);
+
+        const jobChoices = await handleEventType(
+          type,
+          setEventStoryText,
+          setIsEventActive,
+          setCurrentScriptIndex,
+          gameDay,
+          username,
+          setEventBackgroundImage,
+          setNewsEventData,
+          usernameId,
+          null,
+          null,
+          navigate,
+          gender
+        );
+
+        setChoices(jobChoices && jobChoices.length > 0 ? jobChoices : []);
+      } catch (error) {
+        console.error("❌ 이벤트 초기화 실패:", error);
+      }
     };
 
     initEvent();
   }, [username, usernameId, gameDay]);
 
   const goToNextScript = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+
     try {
+      if (eventType === 3 && isJobResultVisible) {
+        await axios.post("/api/next-day", { username });
+
+        const res = await axios.get(`/api/init?username=${username}`);
+        const data = res.data;
+
+        await onDayIncrement(data.current_day, {
+          money: data.ch_stat_money - currentStats.money,
+          health: data.ch_stat_health - currentStats.health,
+          mental: data.ch_stat_mental - currentStats.mental,
+          reputation: data.ch_stat_rep - currentStats.reputation,
+        });
+
+        setCurrentScriptIndex(0);
+        setEventStoryText("");
+        setEventBackgroundImage(null);
+        setIsEventActive(false);
+        setChoices([]);
+        setNewsEventData(null);
+        setIsJobResultVisible(false);
+        return;
+      }
+
       if (isEnding) {
-        const res = await axios.post("/api/reset-progress", { username });
-        if (res.status === 200) {
-          alert("진행도가 초기화되고 로그아웃 됩니다.");
-          localStorage.removeItem("username");
+        try {
+          await axios.post("/api/next-day", { username });
+          const res = await axios.get(`/api/init?username=${username}`);
+          const data = res.data;
 
-          setGameDay(1);
-          setIsEnding(false);
-          setEventStoryText("");
-          setEventBackgroundImage(null);
-          setIsEventActive(false);
-          setChoices([]);
-          setNewsEventData(null);
+          await onDayIncrement(data.current_day, {
+            money: data.ch_stat_money - currentStats.money,
+            health: data.ch_stat_health - currentStats.health,
+            mental: data.ch_stat_mental - currentStats.mental,
+            reputation: data.ch_stat_rep - currentStats.reputation,
+          });
 
-          window.location.href = "/";
-          return;
-        } else {
-          alert("진행도 초기화에 실패했습니다.");
-          return;
+          const resetRes = await axios.post("/api/reset-progress", { username });
+
+          if (resetRes.status === 200) {
+            alert("진행도가 초기화되고 로그아웃 됩니다.");
+            localStorage.removeItem("username");
+
+            setGameDay(1);
+            setIsEnding(false);
+            setEventStoryText("");
+            setEventBackgroundImage(null);
+            setIsEventActive(false);
+            setChoices([]);
+            setNewsEventData(null);
+
+            window.location.href = "/";
+            return;
+          } else {
+            alert("진행도 초기화에 실패했습니다.");
+            return;
+          }
+        } catch (error) {
+          console.error("❌ 엔딩 처리 중 오류:", error);
         }
       }
 
@@ -152,32 +241,74 @@ function GameScreen({
           });
 
           setCurrentScriptIndex(0);
-          setEventStoryText(
-            getGameScript(username)[`day${data.current_day}`]?.[0] || ""
-          );
-          setEventStoryText("");
+          setEventStoryText(getGameScript(username)[`day${data.current_day}`]?.[0] || "");
           setIsEventActive(false);
           setChoices([]);
           setNewsEventData(null);
           setEventBackgroundImage(null);
-
-          if (checkEnding) {
-            await checkEnding();
-          }
         } catch (error) {
           console.error("❌ Day 증가 실패:", error);
         }
       }
     } catch (error) {
       console.error("❌ 다음 버튼 처리 실패:", error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const onChoiceSelected = async (index) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+
     try {
-      let selectedStats = null;
+      if (eventType === 7) {
+        try {
+          const response = await axios.post("/api/reset-progress", {
+            username: username
+          });
+
+          if (response.status === 200) {
+            alert("진행도가 초기화되었습니다.");
+            localStorage.removeItem("username");
+            navigate("/", { replace: true });
+          } else {
+            alert("진행도 초기화에 실패했습니다.");
+          }
+        } catch (error) {
+          console.error("에러 발생:", error);
+          alert("서버 오류가 발생했습니다.");
+        }
+        return;
+      }
+
+      if (eventType === 3) {
+        const selectedChoice = choices[index];
+        const selectedStats = selectedChoice?.stats || {
+          money: 0,
+          health: 0,
+          mental: 0,
+          reputation: 0,
+        };
+
+        await axios.post("/api/update-progress", {
+          username,
+          ch_stat_money: currentStats.money + selectedStats.money,
+          ch_stat_health: currentStats.health + selectedStats.health,
+          ch_stat_mental: currentStats.mental + selectedStats.mental,
+          ch_stat_rep: currentStats.reputation + selectedStats.reputation,
+        });
+
+        setEventStoryText(selectedChoice?.result || "");
+        setEventBackgroundImage(selectedChoice.background || null);
+        setChoices([]);
+        setIsJobResultVisible(true);
+        return;
+      }
 
       if (newsEventData || (choices.length > 0 && isEventActive)) {
+        let selectedStats = null;
+
         if (newsEventData) {
           selectedStats =
             index === 0
@@ -226,8 +357,7 @@ function GameScreen({
 
       if (choices.length > 0) {
         const selectedChoice = choices[index];
-
-        selectedStats = selectedChoice?.stats || {
+        const selectedStats = selectedChoice?.stats || {
           money: 0,
           health: 0,
           mental: 0,
@@ -259,6 +389,8 @@ function GameScreen({
       }
     } catch (error) {
       console.error("❌ 선택지 처리 실패:", error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -297,7 +429,17 @@ function GameScreen({
             )}
           </div>
         </div>
-      </div>
+
+        {/* 캐릭터 이미지는 game-overlay 밖으로 */}
+        {gameScript[`day${gameDay}`] &&
+         gameScript[`day${gameDay}`][currentScriptIndex]?.image && (
+          <img
+            src={`/img/${gameScript[`day${gameDay}`][currentScriptIndex].image}`}
+            alt="캐릭터"
+            className="character-img"
+          />
+        )}
+      </div> {/* <-- main-container 닫힘 */}
 
       <ChoiceButtons
         choices={
@@ -326,17 +468,17 @@ function GameScreen({
               ]
             : choices
         }
-
-        // ✅ 수정된 조건 → 불필요한 "다음" 버튼 안 뜨게
         onNext={
-          !newsEventData &&
-          choices.length === 0 &&
-          gameScript[`day${gameDay}`] &&
-          currentScriptIndex < gameScript[`day${gameDay}`].length
+          isJobResultVisible ||
+          (!newsEventData &&
+            choices.length === 0 &&
+            gameScript[`day${gameDay}`] &&
+            currentScriptIndex < gameScript[`day${gameDay}`].length)
             ? goToNextScript
             : null
         }
         onChoiceSelected={onChoiceSelected}
+        disabled={isProcessing}
       />
     </>
   );
