@@ -17,48 +17,42 @@ export async function handleEventType(
   username_id,
   endingName = null,
   endingImage = null,
-  navigate // ✅ 컴포넌트에서 전달받음
+  navigate,
+  gender
 ) {
   // ✅ 21일차일 경우: 생존 메시지 출력 후 자동 초기화 및 메인 이동
-  if (gameDay === 21) {
-    setIsEventActive(true);
-    setEventStoryText("당신은 생존하였습니다!");
-    setBackgroundImage("/img/survive.png");
+//  if (gameDay === 21) {
+//    setIsEventActive(true);
+//    setEventStoryText("당신은 생존하였습니다!");
+//    setBackgroundImage("/img/survive.png");
+//
+//    setTimeout(async () => {
+//      try {
+//        const response = await axios.post("/api/reset-progress", {
+//          username: username,
+//        });
+//
+//        if (response.status === 200) {
+//          alert("게임이 종료되었습니다. 진행도가 초기화됩니다.");
+//          navigate("/", { state: { username } });
+//        } else {
+//          alert("진행도 초기화에 실패했습니다.");
+//        }
+//      } catch (error) {
+//        console.error("에러 발생:", error);
+//        alert("서버 오류가 발생했습니다.");
+//      }
+//    }, 3000); // 3초 후 자동 이동
+//
+//    return [];
+//  }
+//
+//  // ✅ 21일차 이후는 아예 도달하지 않도록 막기 위해 제거하거나 남겨도 무방 (안전장치)
+//  if (gameDay > 21) {
+//    return [];
+//  }
 
-    setTimeout(async () => {
-      try {
-        const response = await axios.post("/api/reset-progress", {
-          username: username,
-        });
-
-        if (response.status === 200) {
-          alert("게임이 종료되었습니다. 진행도가 초기화됩니다.");
-          navigate("/", { state: { username } });
-        } else {
-          alert("진행도 초기화에 실패했습니다.");
-        }
-      } catch (error) {
-        console.error("에러 발생:", error);
-        alert("서버 오류가 발생했습니다.");
-      }
-    }, 3000); // 3초 후 자동 이동
-
-    return [];
-  }
-
-  // ✅ 21일차 이후는 아예 도달하지 않도록 막기 위해 제거하거나 남겨도 무방 (안전장치)
-  if (gameDay > 21) {
-    return [];
-  }
-
-  if (type === 7) {
-    setIsEventActive(true);
-    setEventStoryText(endingName || "게임 엔딩에 도달했습니다!");
-    setBackgroundImage(endingImage || "/img/event_ending.png");
-    return [];
-  }
-
-  const gameScriptData = getGameScript(username);
+  const gameScriptData = getGameScript(username, gender);
 
   const dayBackgroundMap = {
     1: "home",
@@ -69,7 +63,7 @@ export async function handleEventType(
     6: "warehouse",
   };
 
-  const backgroundName = dayBackgroundMap[gameDay] || "default";
+  const backgroundName = dayBackgroundMap[gameDay] || "home";
 
   switch (type) {
     case 0: // 고정 이벤트
@@ -134,7 +128,7 @@ export async function handleEventType(
       setCurrentScriptIndex(0);
 
       try {
-        const res = await axios.get(`/api/dialogues/job-choices`);
+        const res = await axios.get("/api/dialogues/job-choices");
         const allChoices = res.data.map((c) => ({
           text: c.choiceText,
           result: c.resultDialogue,
@@ -196,12 +190,35 @@ export async function handleEventType(
       setEventStoryText("즐거운 주말입니다!");
       break;
 
-    case 6: // 엔딩
+    case 6: // 노말
       console.log("🎬 엔딩 도달");
       setIsEventActive(true);
       setBackgroundImage("/img/event_ending.png");
       setEventStoryText("게임 엔딩에 도달했습니다!");
       break;
+
+      case 7: // 베드엔딩 또는 엔딩 후 초기화
+        console.log("🔁 엔딩 후 초기화 이벤트");
+        setIsEventActive(true);
+
+        if (endingImage.includes("Common")) {
+          setEventStoryText(endingName ? `엔딩: ${endingName}` : "게임 엔딩에 도달했습니다!");
+          setBackgroundImage(endingImage);
+          console.log("무성 엔딩 이미지:", endingImage);
+        } else {
+          const genderPrefix = gender === 1 ? "Female" : "Male";
+          setEventStoryText(endingName ? `엔딩: ${endingName}` : "게임 엔딩에 도달했습니다!");
+          setBackgroundImage(`${genderPrefix}${endingImage}`);
+          console.log("성별 기반 이미지:", `${genderPrefix}${endingImage}`);
+        }
+
+        return [
+          {
+            text: "로그아웃 및 진행도 초기화",
+            stats: { money: 0, health: 0, mental: 0, reputation: 0 },
+            result: "",
+          },
+        ];
 
     default:
       console.warn("⚠️ 알 수 없는 이벤트 타입입니다:", type);

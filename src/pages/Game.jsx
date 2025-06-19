@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom"; // ✅ navigate 추가
+import { useLocation, useNavigate } from "react-router-dom";
 
 import HeaderBar from "../components/HeaderBar";
 import BottomStats from "../components/BottomStats";
@@ -15,7 +15,7 @@ import { handleEventType } from "../utils/GameEvents";
 
 function Game() {
   const location = useLocation();
-  const navigate = useNavigate(); // ✅ navigate 선언
+  const navigate = useNavigate();
   const username = location.state?.username || localStorage.getItem("username");
 
   const [gameDay, setGameDay] = useState(0);
@@ -29,6 +29,7 @@ function Game() {
   const [showNews, setShowNews] = useState(false);
   const [lastNewsOpenedDay, setLastNewsOpenedDay] = useState(-1);
   const [showMenu, setShowMenu] = useState(false);
+  const [gender, setGender] = useState(-1);;
 
   const [isEnding, setIsEnding] = useState(false);
   const [eventStoryText, setEventStoryText] = useState("");
@@ -54,14 +55,15 @@ function Game() {
     fetchUserId();
   }, [username]);
 
-  // 게임 초기 상태 가져오기
+  // 게임 초기 상태 가져오기 및 엔딩 체크
   useEffect(() => {
     if (!username) return;
 
-    axios
-      .get(`/api/init?username=${username}`)
-      .then((res) => {
+    const initGame = async () => {
+      try {
+        const res = await axios.get(`/api/init?username=${username}`);
         const data = res.data;
+
         setGameDay(data.current_day);
         setStats({
           money: data.ch_stat_money,
@@ -70,61 +72,44 @@ function Game() {
           reputation: data.ch_stat_rep,
         });
 
+        setGender(data.gender || -1);
+
         localStorage.setItem("username", username);
-      })
-      .catch((err) => {
+
+        if (data.ending_list === 1) {
+          await checkEnding();
+        } else {
+          resetEndingState();
+        }
+      } catch (err) {
         console.error("게임 데이터 초기화 실패:", err);
-      });
+      }
+    };
+
+    initGame();
   }, [username]);
 
-  // 변화량으로 스탯 갱신
-  const updateDayAndStats = async (newDay, statDelta) => {
-    setGameDay(newDay);
-    setStats((prev) => ({
-      money: prev.money + statDelta.money,
-      health: prev.health + statDelta.health,
-      mental: prev.mental + statDelta.mental,
-      reputation: prev.reputation + statDelta.reputation,
-    }));
-
-    try {
-      const res = await axios.get(`/api/ending/${userId}`);
-      if (res.data && res.data.endingName && res.data.imglink) {
-        // 엔딩 조건 충족 시
-        await handleEventType(
-          7,
-          setEventStoryText,
-          setIsEventActive,
-          setCurrentScriptIndex,
-          newDay,
-          username,
-          setEventBackgroundImage,
-          setNewsEventData,
-          userId,
-          res.data.endingName,
-          `/img/${res.data.imglink}`,
-          navigate
-        );
-      }
-    } catch (err) {
-      console.error("엔딩 조건 확인 중 오류:", err);
-    }
+  const resetEndingState = () => {
+    setIsEnding(false);
+    setEventStoryText("");
+    setEventBackgroundImage(null);
   };
 
   // 엔딩 체크 함수
   const checkEnding = async () => {
     try {
       const res = await axios.get("/api/check-ending", {
-        params: { username: username },
+        params: { username },
       });
 
-      if (res.data && res.data.endingname && res.data.imglink) {
+      if (res.data && res.data.ending && res.data.imglink) {
+        const imgPath = `/img/${res.data.imglink}`;
         setIsEnding(true);
-        setEventStoryText(res.data.endingname);
-        setEventBackgroundImage(`/img/${res.data.imglink}`);
+        setEventStoryText(res.data.ending);
+        setEventBackgroundImage(imgPath);
 
-        await handleEventType(
-          7, // 엔딩 타입
+        const resultChoices = await handleEventType(
+          7,
           setEventStoryText,
           setIsEventActive,
           setCurrentScriptIndex,
@@ -133,29 +118,75 @@ function Game() {
           setEventBackgroundImage,
           setNewsEventData,
           userId,
-          res.data.endingname,
-          `/img/${res.data.imglink}`,
-          navigate // ✅ navigate 전달
+          res.data.ending,
+          imgPath,
+          navigate,
+          gender
         );
+
+        //setChoices(resultChoices || []);
       } else {
-        setIsEnding(false);
-        setEventStoryText("");
-        setEventBackgroundImage(null);
+        resetEndingState();
       }
     } catch (error) {
       console.error("❌ 엔딩 체크 실패:", error);
     }
   };
 
+  // 날짜 및 스탯 업데이트 함수
+  const updateDayAndStats = async (newDay, statDelta) => {
+    const updatedStats = {
+      money: stats.money + statDelta.money,
+      health: stats.health + statDelta.health,
+      mental: stats.mental + statDelta.mental,
+      reputation: stats.reputation + statDelta.reputation,
+    };
+
+    try {
+      const res = await axios.get("/api/check-ending", {
+        params: { username },
+      });
+
+      console.log("API 호출: /api/check-ending 응답 받음", JSON.stringify(res.data, null, 2));
+
+      if (res.data && res.data.ending && res.data.imglink) {
+        const imgPath = `/img/${res.data.imglink}`;
+        setIsEnding(true);
+        setEventStoryText(res.data.ending);
+        setEventBackgroundImage(imgPath);
+
+        await handleEventType(
+          7,
+          setEventStoryText,
+          setIsEventActive,
+          setCurrentScriptIndex,
+          gameDay,
+          username,
+          setEventBackgroundImage,
+          setNewsEventData,
+          userId,
+          res.data.ending,
+          imgPath,
+          navigate
+        );
+      }
+
+      setGameDay(newDay);
+      setStats(updatedStats);
+    } catch (error) {
+      console.error("❌ 날짜 및 스탯 업데이트 실패:", error);
+    }
+  };
+
   const toggleNews = () => {
-    setShowNews(!showNews);
+    setShowNews((prev) => !prev);
     if (!showNews) {
       setLastNewsOpenedDay(gameDay);
     }
   };
 
   const toggleMenu = () => {
-    setShowMenu(!showMenu);
+    setShowMenu((prev) => !prev);
   };
 
   return (
@@ -172,13 +203,13 @@ function Game() {
         setIsEnding={setIsEnding}
         setEventStoryText={setEventStoryText}
         setEventBackgroundImage={setEventBackgroundImage}
-        checkEnding={checkEnding}
         isEventActive={isEventActive}
         setIsEventActive={setIsEventActive}
         currentScriptIndex={currentScriptIndex}
         setCurrentScriptIndex={setCurrentScriptIndex}
         newsEventData={newsEventData}
         setNewsEventData={setNewsEventData}
+        gender = {gender}
       />
 
       <HeaderBar
@@ -192,7 +223,6 @@ function Game() {
 
       {showNews && <NewsComponent onClose={toggleNews} userId={userId} />}
       {!showNews && <BottomStats stats={stats} />}
-
       {showMenu && <MenuWindow onClose={toggleMenu} username={username} />}
     </div>
   );

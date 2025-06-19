@@ -1,12 +1,14 @@
 import React from "react";
 import "../styles/ChoiceButtons.css";
 
-function ChoiceButtons({ choices, onChoiceSelected, onNext }) {
-  // ✅ onNext가 없을 경우 버튼 자체를 안 보여줌
+function ChoiceButtons({ choices, onChoiceSelected, onNext, disabled }) {
+  // onNext가 없으면 버튼 안 보임
   if ((!choices || choices.length === 0) && onNext) {
     return (
       <div className="choice-buttons-center">
-        <button onClick={onNext}>다음</button>
+        <button onClick={onNext} disabled={disabled}>
+          다음
+        </button>
       </div>
     );
   }
@@ -14,7 +16,7 @@ function ChoiceButtons({ choices, onChoiceSelected, onNext }) {
   if (choices && choices.length === 1) {
     return (
       <div className="choice-buttons-center">
-        <button onClick={() => onChoiceSelected(0)}>
+        <button onClick={() => onChoiceSelected(0)} disabled={disabled}>
           {choices[0].text}
         </button>
       </div>
@@ -29,6 +31,7 @@ function ChoiceButtons({ choices, onChoiceSelected, onNext }) {
             key={idx}
             className="choice-button"
             onClick={() => onChoiceSelected(idx)}
+            disabled={disabled}
           >
             {choice.text}
           </button>
@@ -37,7 +40,7 @@ function ChoiceButtons({ choices, onChoiceSelected, onNext }) {
     );
   }
 
-  return null; // ✅ 아무것도 없을 경우 아무것도 렌더링하지 않음
+  return null; // 아무것도 없으면 렌더링 안 함
 }
 
 export default ChoiceButtons;
