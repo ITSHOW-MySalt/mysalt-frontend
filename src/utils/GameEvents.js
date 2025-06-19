@@ -14,8 +14,25 @@ export async function handleEventType(
   username,
   setBackgroundImage,
   setNewsEventData,
-  username_id
+  username_id,
+  endingName = null,
+  endingImage = null
 ) {
+  // gameDay가 21이면 생존 메시지 띄우고 초기화 안내 (클라이언트에서 gameDay 초기화 필요)
+  if (gameDay === 21) {
+    setIsEventActive(true);
+    setEventStoryText("당신은 생존하였습니다!");
+    setBackgroundImage("/img/survive.png");
+    return [];
+  }
+
+  if (type === 7) {
+    setIsEventActive(true);
+    setEventStoryText(endingName || "게임 엔딩에 도달했습니다!");
+    setBackgroundImage(endingImage || "/img/event_ending.png");
+    return [];
+  }
+
   const gameScriptData = getGameScript(username);
 
   const dayBackgroundMap = {
@@ -56,7 +73,6 @@ export async function handleEventType(
             : "/img/background_home.png"
         );
 
-        // 선택지에 상태변화값도 넣어주기 (DB 컬럼명에 맞게 수정)
         return [
           {
             text: eventData.choice1 || "선택지1",
@@ -101,7 +117,7 @@ export async function handleEventType(
             money: c.chStatMoney,
             health: c.chStatHealth,
             mental: c.chStatMental,
-            reputation: c.chStatRep,  // ✅ rep → reputation
+            reputation: c.chStatRep,
           },
           background: getBackgroundImagePath(c.background),
           id: c.id,
