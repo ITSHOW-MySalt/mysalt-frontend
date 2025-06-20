@@ -1,6 +1,7 @@
 import getGameScript from "../data/GameScript";
 import axios from "axios";
 
+
 function getBackgroundImagePath(name) {
   return name ? `/img/background_${name}.png` : "/img/background_home.png";
 }
@@ -18,39 +19,11 @@ export async function handleEventType(
   endingName = null,
   endingImage = null,
   navigate,
-  gender
+  gender,
+  setHeroineMeetingCount,
+  setChoices
 ) {
-  // ✅ 21일차일 경우: 생존 메시지 출력 후 자동 초기화 및 메인 이동
-//  if (gameDay === 21) {
-//    setIsEventActive(true);
-//    setEventStoryText("당신은 생존하였습니다!");
-//    setBackgroundImage("/img/survive.png");
-//
-//    setTimeout(async () => {
-//      try {
-//        const response = await axios.post("/api/reset-progress", {
-//          username: username,
-//        });
-//
-//        if (response.status === 200) {
-//          alert("게임이 종료되었습니다. 진행도가 초기화됩니다.");
-//          navigate("/", { state: { username } });
-//        } else {
-//          alert("진행도 초기화에 실패했습니다.");
-//        }
-//      } catch (error) {
-//        console.error("에러 발생:", error);
-//        alert("서버 오류가 발생했습니다.");
-//      }
-//    }, 3000); // 3초 후 자동 이동
-//
-//    return [];
-//  }
-//
-//  // ✅ 21일차 이후는 아예 도달하지 않도록 막기 위해 제거하거나 남겨도 무방 (안전장치)
-//  if (gameDay > 21) {
-//    return [];
-//  }
+
 
   const gameScriptData = getGameScript(username, gender);
 
@@ -92,24 +65,26 @@ export async function handleEventType(
             : "/img/background_home.png"
         );
 
+        console.log("eventData:", eventData);
+
         return [
           {
             text: eventData.choice1 || "선택지1",
             stats: {
-              money: eventData.ch_stat1_money || 0,
-              health: eventData.ch_stat1_health || 0,
-              mental: eventData.ch_stat1_mental || 0,
-              reputation: eventData.ch_stat1_rep || 0,
+              money: eventData.ch_stat1_Money || 0,
+              health: eventData.ch_stat1_Health || 0,
+              mental: eventData.ch_stat1_Mental || 0,
+              reputation: eventData.ch_stat1_Rep || 0,
             },
             result: eventData.result1 || "",
           },
           {
             text: eventData.choice2 || "선택지2",
             stats: {
-              money: eventData.ch_stat2_money || 0,
-              health: eventData.ch_stat2_health || 0,
-              mental: eventData.ch_stat2_mental || 0,
-              reputation: eventData.ch_stat2_rep || 0,
+              money: eventData.ch_stat2_Money || 0,
+              health: eventData.ch_stat2_Health || 0,
+              mental: eventData.ch_stat2_Mental || 0,
+              reputation: eventData.ch_stat2_Rep || 0,
             },
             result: eventData.result2 || "",
           },
@@ -183,12 +158,31 @@ export async function handleEventType(
       }
       break;
 
-    case 5: // 주말 이벤트
-      console.log("🎉 주말 이벤트 발생");
-      setIsEventActive(true);
-      setBackgroundImage("/img/event_weekend.png");
-      setEventStoryText("즐거운 주말입니다!");
-      break;
+case 5: // 히로인 이벤트
+  console.log("💘 히로인 이벤트 발생");
+  setIsEventActive(true);
+  setBackgroundImage(getBackgroundImagePath("home"));
+
+  try {
+    const res = await axios.get(`/api/heroin/${username_id}`);
+    const data = res.data;
+    const count = (data.heroinA_meetCount || 0) + (data.heroinB_meetCount || 0);
+    setHeroineMeetingCount(count);
+
+    const choices = [
+          { text: "놀러 나간다", next: "goOut" },
+          { text: "집에서 쉰다", next: "rest" },
+        ];
+        setEventStoryText("오늘은 주말이다. 밖으로 나갈까?");
+        setChoices(choices);
+        return choices;
+  } catch (err) {
+    console.error("❌ 히로인 만남 수 불러오기 실패:", err);
+    setEventStoryText("히로인 이벤트 오류 발생...");
+  }
+  break;
+
+
 
     case 6: // 노말
       console.log("🎬 엔딩 도달");

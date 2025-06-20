@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { handleEventType } from "../utils/GameEvents";
 import getGameScript from "../data/GameScript";
+import heroineScript from "../data/heroineScript";
 import "../styles/GameScreen.css";
 import ChoiceButtons from "./ChoiceButtons";
 
@@ -26,7 +27,7 @@ function GameScreen({
   setCurrentScriptIndex,
   newsEventData,
   setNewsEventData,
-  gender
+  gender,
 }) {
   const navigate = useNavigate();
   const [usernameId, setUsernameId] = useState(null);
@@ -35,6 +36,8 @@ function GameScreen({
   const [eventType, setEventType] = useState(null);
   const [isJobResultVisible, setIsJobResultVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [heroineMeetingCount, setHeroineMeetingCount] = useState(0);
+  const [heroineType, setHeroineType] = useState(null);
 
   useEffect(() => {
     if (username_id) {
@@ -94,7 +97,9 @@ function GameScreen({
               endingRes.data.ending,
               imgPath,
               navigate,
-              gender
+              gender,
+              setHeroineMeetingCount, // ✅ 추가
+              setChoices               // ✅ 추가
             );
 
             setChoices(resultChoices || []);
@@ -118,7 +123,9 @@ function GameScreen({
           null,
           null,
           navigate,
-          gender
+          gender,
+          setHeroineMeetingCount, // ✅ 추가
+          setChoices               // ✅ 추가
         );
 
         setChoices(jobChoices && jobChoices.length > 0 ? jobChoices : []);
@@ -304,7 +311,80 @@ function GameScreen({
         setChoices([]);
         setIsJobResultVisible(true);
         return;
-      }
+      } //7
+
+      const selectedChoice = choices[index];
+
+      if (eventType === 5) {
+        if (selectedChoice.next === "goOut") {
+          setChoices([
+            { text: "공원", next: "A" },
+            { text: "카페", next: "B" },
+          ]);
+          setEventStoryText("어디로 갈까?");
+          return;
+        }
+
+        if (selectedChoice.next === "A" || selectedChoice.next === "B") {
+          const heroine = selectedChoice.next;
+          setHeroineType(heroine);
+
+          // meet 증가
+          await axios.post(`/api/heroin/${usernameId}/meet`, null, {
+            params: { target: heroine },
+          });
+
+          // 현재 affection 가져오기
+          const res = await axios.get(`/api/heroin/${usernameId}`);
+          const data = res.data;
+          const currentAffection =
+            heroine === "A" ? data.heroinA_affection : data.heroinB_affection;
+
+          // 선택지 기반 affection 증가
+          const affectionGain = selectedChoice.affection || 0;
+
+          // 선택지 기반 money 차감 추가
+          const moneyChange = selectedChoice.money || 0;
+
+          // affection 증가 API 호출
+          await axios.post(`/api/heroin/${usernameId}/affection`, null, {
+            params: { target: heroine, amount: affectionGain },
+          });
+
+          // progress money 업데이트 API 호출
+          await axios.post("/api/update-progress", {
+            username,
+            ch_stat_money: currentStats.money + moneyChange,
+            ch_stat_health: currentStats.health,
+            ch_stat_mental: currentStats.mental,
+            ch_stat_rep: currentStats.reputation,
+          });
+
+          // 대사 구성
+          const dialogue = heroineScript(heroine, currentAffection + affectionGain);
+          setEventStoryText(dialogue[0]);
+          setCurrentScriptIndex(0);
+          setChoices([]);
+          setGameScript({ heroine: dialogue });
+          return;
+        }
+
+        if (selectedChoice.next === "rest") {
+          setEventStoryText("오늘은 그냥 푹 쉬었다.");
+          setChoices([]); // 선택지 제거
+          setIsJobResultVisible(true);
+
+          await axios.post("/api/update-progress", {
+            username,
+            ch_stat_health: currentStats.health + 10,
+            ch_stat_mental: currentStats.mental + 5,
+            ch_stat_money: currentStats.money + 10,
+            ch_stat_rep: currentStats.reputation - 5,
+          });
+          return;
+        }
+      } //5
+
 
       if (newsEventData || (choices.length > 0 && isEventActive)) {
         let selectedStats = null;
@@ -413,7 +493,37 @@ function GameScreen({
         <div className="game-overlay">
           <div className="game-story-text">
             {isEventActive || isEnding ? (
-              <p>{eventStoryText}</p>
+              <div className="game-story-text">
+                {isEventActive || isEnding ? (
+                  typeof eventStoryText === "string" ? (
+                    <p>{eventStoryText}</p>
+                  ) : (
+                    <>
+                      <p>{eventStoryText.text}</p>
+                      {eventStoryText.image && (
+                        <img
+                          src={`/img/${eventStoryText.image}`}
+                          alt="히로인"
+                          className="character-img"
+                        />
+                      )}
+                    </>
+                  )
+                ) : (
+                  gameScript[`day${gameDay}`] &&
+                  gameScript[`day${gameDay}`][currentScriptIndex] && (
+                    <>
+                      {gameScript[`day${gameDay}`][currentScriptIndex].speaker && (
+                        <p className="speaker">
+                          {gameScript[`day${gameDay}`][currentScriptIndex].speaker}
+                        </p>
+                      )}
+                      <p>{gameScript[`day${gameDay}`][currentScriptIndex].text}</p>
+                    </>
+                  )
+                )}
+              </div>
+
             ) : (
               gameScript[`day${gameDay}`] &&
               gameScript[`day${gameDay}`][currentScriptIndex] && (
