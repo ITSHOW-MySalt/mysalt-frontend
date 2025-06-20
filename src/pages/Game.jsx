@@ -55,6 +55,29 @@ function Game() {
     fetchUserId();
   }, [username]);
 
+  //히로인 이벤트 db생성
+  useEffect(() => {
+    if (!userId) return;
+
+    const initHeroineProgress = async () => {
+      try {
+        await axios.post("/api/heroin/init-progress", null, {
+          params: { gameProgressId: userId },
+        });
+        console.log("✅ 히로인 진행도 초기화 완료");
+      } catch (err) {
+        if (err.response?.status === 409) {
+          console.log("⚠️ 이미 히로인 진행도 존재함");
+        } else {
+          console.error("❌ 히로인 진행도 초기화 실패:", err);
+        }
+      }
+    };
+
+    initHeroineProgress();
+  }, [userId]);
+
+
   // 게임 초기 상태 가져오기 및 엔딩 체크
   useEffect(() => {
     if (!username) return;
@@ -173,6 +196,7 @@ function Game() {
 
       setGameDay(newDay);
       setStats(updatedStats);
+      await checkEnding();
     } catch (error) {
       console.error("❌ 날짜 및 스탯 업데이트 실패:", error);
     }
@@ -195,6 +219,7 @@ function Game() {
         username={username}
         username_id={userId}
         gameDay={gameDay}
+        setGameDay={setGameDay}
         onDayIncrement={updateDayAndStats}
         currentStats={stats}
         isEnding={isEnding}

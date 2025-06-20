@@ -16,11 +16,14 @@ const gameScript = (username, gender) => ({
       text: "목표는 간단하다. 35일 동안, 살아남기.",
       image: gender === 1 ? "Female_neutral.png" : "Male_neutral.png",
     },
-    { speaker: username, text: "그럼, 시작해볼까?" ,
+    { text: "돈, 체력, 멘탈, 평판요소를 관리하며 0이 되지 않게하자" },
+    { text: "일주일마다 나오는 주간 뉴스또한 도움이 많이 될거야." },
+    { speaker: username, text: "그럼, 뉴스를 보며 시작해볼까?" ,
       image: gender === 1 ? "Female_neutral.png" : "Male_neutral.png",},
+
   ],
 
-  day19: [
+  day25: [
     { text: "평소와 다름없는 하루.." },
     { text: "(초인종 소리)" },
     { speaker: username, text: "??? 누구지? 오늘은 올 사람 없을 텐데.." },
