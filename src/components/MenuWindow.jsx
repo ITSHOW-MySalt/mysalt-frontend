@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios"; 
 import "../styles/MenuWindow.css";
 
-function MenuWindow({ onClose, username }) {
+function MenuWindow({ onClose, username, userId }) {
   const navigate = useNavigate();
 
   const goToEncyclopedia = () => {
@@ -26,6 +26,9 @@ function MenuWindow({ onClose, username }) {
       const response = await axios.post("/api/reset-progress", {
         username: username
       });
+//        await axios.post("/api/heroin/reset-progress", null, {
+//             params: { gameProgressId: userId },
+//        });
 
       if (response.status === 200) {
         alert("진행도가 초기화되었습니다.");
